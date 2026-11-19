@@ -2,6 +2,7 @@ package com.reparaciones.paginaweb.services;
 
 import com.reparaciones.paginaweb.models.*;
 import com.reparaciones.paginaweb.repositories.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,21 +17,24 @@ public class AuthService {
     private final ClienteRepository clienteRepository;
     private final TecnicoRepository tecnicoRepository;
     private final AdministradorRepository administradorRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthService(PersonaRepository personaRepository,
                        CredencialesRepository credencialesRepository,
                        ClienteRepository clienteRepository,
                        TecnicoRepository tecnicoRepository,
-                       AdministradorRepository administradorRepository) {
+                       AdministradorRepository administradorRepository,
+                       PasswordEncoder passwordEncoder) {
         this.personaRepository = personaRepository;
         this.credencialesRepository = credencialesRepository;
         this.clienteRepository = clienteRepository;
         this.tecnicoRepository = tecnicoRepository;
         this.administradorRepository = administradorRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // ==================== REGISTRAR USUARIO ====================
-    public Map<String, Object> registrarUsuario(PersonaModel persona, String usuario, 
+    public Map<String, Object> registrarUsuario(PersonaModel persona, String usuario,
                                                  String contrasena, String rol) {
         if (personaRepository.existsByDni(persona.getDni())) {
             throw new RuntimeException("El DNI ya está registrado");
@@ -45,7 +49,8 @@ public class AuthService {
         CredencialesModel credenciales = new CredencialesModel();
         credenciales.setIdPersona(personaGuardada.getIdPersona());
         credenciales.setUsuario(usuario);
-        credenciales.setContrasena(contrasena);
+        // Hashear la contraseña con BCrypt
+        credenciales.setContrasena(passwordEncoder.encode(contrasena));
         credenciales.setRol(rol.toUpperCase());
         credenciales.setEstado(1);
         credencialesRepository.save(credenciales);
@@ -56,21 +61,21 @@ public class AuthService {
                 cliente.setIdPersona(personaGuardada.getIdPersona());
                 clienteRepository.save(cliente);
                 break;
-                
+
             case "TECNICO":
             case "TÉCNICO":
                 TecnicoModel tecnico = new TecnicoModel();
                 tecnico.setIdPersona(personaGuardada.getIdPersona());
                 tecnicoRepository.save(tecnico);
                 break;
-                
+
             case "ADMIN":
             case "ADMINISTRADOR":
                 AdministradorModel admin = new AdministradorModel();
                 admin.setIdPersona(personaGuardada.getIdPersona());
                 administradorRepository.save(admin);
                 break;
-                
+
             default:
                 throw new RuntimeException("Rol no válido: " + rol);
         }
@@ -87,11 +92,50 @@ public class AuthService {
         );
     }
 
+    // ==================== LOGIN ====================
+    public Map<String, Object> login(String usuario, String contrasena) {
+        Optional<CredencialesModel> credOpt = credencialesRepository.findByUsuario(usuario);
+
+        if (credOpt.isEmpty()) {
+            throw new RuntimeException("Usuario o contraseña incorrectos");
+        }
+
+        CredencialesModel cred = credOpt.get();
+
+        if (cred.getEstado() == null || cred.getEstado() != 1) {
+            throw new RuntimeException("Usuario desactivado. Contacte al administrador.");
+        }
+
+        // Comparar contraseña ingresada con el hash almacenado
+        if (!passwordEncoder.matches(contrasena, cred.getContrasena())) {
+            throw new RuntimeException("Usuario o contraseña incorrectos");
+        }
+
+        // Obtener datos de la persona
+        Optional<PersonaModel> personaOpt = personaRepository.findById(cred.getIdPersona());
+
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("idPersona", cred.getIdPersona());
+        respuesta.put("rol", cred.getRol());
+        respuesta.put("usuario", cred.getUsuario());
+        respuesta.put("mensaje", "Login exitoso");
+
+        personaOpt.ifPresent(persona -> {
+            respuesta.put("nombre", persona.getNombre());
+            respuesta.put("apellido", persona.getApellido());
+            respuesta.put("correo", persona.getCorreo());
+            respuesta.put("telefono", persona.getTelefono());
+            respuesta.put("dni", persona.getDni());
+        });
+
+        return respuesta;
+    }
+
     // ==================== OBTENER TODOS LOS USUARIOS ====================
     public List<Map<String, Object>> obtenerTodosUsuarios() {
         List<PersonaModel> personas = personaRepository.findAll();
         List<Map<String, Object>> usuarios = new ArrayList<>();
-        
+
         for (PersonaModel persona : personas) {
             Map<String, Object> usuarioData = new HashMap<>();
             usuarioData.put("idPersona", persona.getIdPersona());
@@ -100,10 +144,10 @@ public class AuthService {
             usuarioData.put("dni", persona.getDni());
             usuarioData.put("telefono", persona.getTelefono());
             usuarioData.put("correo", persona.getCorreo());
-            
-            Optional<CredencialesModel> credOpt = 
+
+            Optional<CredencialesModel> credOpt =
                 credencialesRepository.findByUsuario(persona.getCorreo());
-            
+
             if (credOpt.isPresent()) {
                 CredencialesModel cred = credOpt.get();
                 usuarioData.put("rol", cred.getRol());
@@ -114,25 +158,25 @@ public class AuthService {
                 usuarioData.put("estado", 0);
                 usuarioData.put("usuario", persona.getCorreo());
             }
-            
+
             usuarios.add(usuarioData);
         }
-        
+
         return usuarios;
     }
 
     // ==================== CAMBIAR ESTADO (ACTIVAR/DESACTIVAR) ====================
     public Map<String, Object> cambiarEstado(Integer idPersona, Integer estado) {
         Optional<CredencialesModel> credOpt = credencialesRepository.findById(idPersona);
-        
+
         if (credOpt.isEmpty()) {
             throw new RuntimeException("Usuario no encontrado con ID: " + idPersona);
         }
-        
+
         CredencialesModel cred = credOpt.get();
         cred.setEstado(estado);
         credencialesRepository.save(cred);
-        
+
         return Map.of(
             "mensaje", estado == 1 ? "Usuario activado" : "Usuario desactivado",
             "idPersona", idPersona,
@@ -143,30 +187,30 @@ public class AuthService {
     // ==================== CAMBIAR ROL ====================
     public Map<String, Object> cambiarRol(Integer idPersona, String nuevoRol) {
         Optional<CredencialesModel> credOpt = credencialesRepository.findById(idPersona);
-        
+
         if (credOpt.isEmpty()) {
             throw new RuntimeException("Usuario no encontrado con ID: " + idPersona);
         }
-        
+
         CredencialesModel cred = credOpt.get();
         String rolAnterior = cred.getRol();
         nuevoRol = nuevoRol.toUpperCase();
-        
+
         // Si es el mismo rol, no hacer nada
         if (rolAnterior.equalsIgnoreCase(nuevoRol)) {
             return Map.of("mensaje", "El usuario ya tiene ese rol");
         }
-        
+
         // Actualizar credencial
         cred.setRol(nuevoRol);
         credencialesRepository.save(cred);
-        
+
         // Eliminar de tabla anterior
         eliminarDeTablaRol(idPersona, rolAnterior);
-        
+
         // Agregar a nueva tabla
         agregarATablaRol(idPersona, nuevoRol);
-        
+
         return Map.of(
             "mensaje", "Rol cambiado de " + rolAnterior + " a " + nuevoRol,
             "idPersona", idPersona,

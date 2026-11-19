@@ -5,7 +5,6 @@ import com.reparaciones.paginaweb.models.OrdenTrabajo;
 import com.reparaciones.paginaweb.services.PagoService;
 import com.reparaciones.paginaweb.services.NotificacionService;
 import com.reparaciones.paginaweb.repositories.OrdenTrabajoRepository;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,13 +53,12 @@ public class PagoController {
     @PostMapping("/procesar")
     public ResponseEntity<?> procesarPago(@RequestBody Map<String, Object> datos) {
         try {
-            // ⚠️ En el front se manda "pago_id" pero en realidad es el idOrden
+            // En el front se manda "pago_id" pero en realidad es el idOrden
             Integer idOrden = Integer.parseInt(datos.get("pago_id").toString());
 
             OrdenTrabajo ot = ordenTrabajoRepository.findById(idOrden)
                 .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
 
-            // Verificar que la orden está lista para pagar
             if (!Boolean.TRUE.equals(ot.getPuedePagar())) {
                 return ResponseEntity.badRequest()
                     .body(Map.of("error", "Esta orden aún no está lista para pago"));
@@ -70,7 +68,7 @@ public class PagoController {
             pago.setOrdenTrabajo(ot);
             pago.setMonto(new BigDecimal(datos.get("monto").toString()));
             pago.setMoneda("PEN");
-            pago.setEstado("PAGADO");  // PAGADO, esperando aprobación del admin
+            pago.setEstado("PAGADO");
             pago.setMetodoPago(datos.get("metodo_pago") != null ?
                 datos.get("metodo_pago").toString() : "TRANSFERENCIA");
             pago.setFechaPago(LocalDateTime.now());
@@ -78,9 +76,7 @@ public class PagoController {
 
             PagoModel saved = pagoService.save(pago);
 
-            // Bloquear el botón de pagar (ya pagó)
             ot.setPuedePagar(false);
-            // NO cambiar estado de la orden. Queda en TERMINADO.
             ordenTrabajoRepository.save(ot);
 
             notificacionService.crearNotificacion(
@@ -107,7 +103,6 @@ public class PagoController {
             pago.setEstado("APROBADO");
             pagoService.save(pago);
 
-            // 🔥 Al aprobar pago, la orden pasa a ENTREGADO
             OrdenTrabajo ot = pago.getOrdenTrabajo();
             if (ot != null) {
                 ot.setEstado("ENTREGADO");
@@ -139,7 +134,6 @@ public class PagoController {
             pago.setEstado("RECHAZADO");
             pagoService.save(pago);
 
-            // Devolver permiso de pagar al cliente
             OrdenTrabajo ot = pago.getOrdenTrabajo();
             if (ot != null) {
                 ot.setPuedePagar(true);
@@ -162,7 +156,7 @@ public class PagoController {
         }
     }
 
-    // ==================== OTROS ENDPOINTS (los mantenemos) ====================
+    // ==================== OTROS ENDPOINTS ====================
     @GetMapping("/cliente/{idCliente}")
     public ResponseEntity<List<Map<String, Object>>> getPagosCliente(
             @PathVariable Integer idCliente,

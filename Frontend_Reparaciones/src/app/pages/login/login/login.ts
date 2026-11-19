@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,7 +11,7 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })
-export class Login {
+export class Login implements OnDestroy {
   usuario: string = '';
   contrasena: string = '';
   cargando: boolean = false;
@@ -23,6 +23,7 @@ export class Login {
   correoRecuperacion: string = '';
   enviandoCorreo: boolean = false;
   correoEnviado: boolean = false;
+  errorRecuperacion: string = '';
 
   mostrarRegistro: boolean = false;
   dni: string = '';
@@ -39,6 +40,8 @@ export class Login {
 
   private timeoutErrorLogin: any;
   private timeoutErrorRegistro: any;
+  private timeoutBloqueo: any;
+  private timeoutCuentaCreada: any;
 
   private apiUrl = 'http://localhost:8080/api';
 
@@ -47,6 +50,13 @@ export class Login {
     private http: HttpClient,
     private cdr: ChangeDetectorRef
   ) {}
+
+  ngOnDestroy(): void {
+    if (this.timeoutErrorLogin) clearTimeout(this.timeoutErrorLogin);
+    if (this.timeoutErrorRegistro) clearTimeout(this.timeoutErrorRegistro);
+    if (this.timeoutBloqueo) clearTimeout(this.timeoutBloqueo);
+    if (this.timeoutCuentaCreada) clearTimeout(this.timeoutCuentaCreada);
+  }
 
   // ==================== HELPERS DE ERROR ====================
   private mostrarErrorLogin(mensaje: string) {
@@ -139,6 +149,19 @@ export class Login {
       this.mostrarErrorRegistro('Debes ingresar tu fecha de nacimiento');
       return false;
     }
+    const fecha = new Date(this.fechaNacimiento);
+    const hoy = new Date();
+    if (fecha > hoy) {
+      this.mostrarErrorRegistro('La fecha de nacimiento no puede ser futura');
+      return false;
+    }
+    const edad = Math.floor(
+      (hoy.getTime() - fecha.getTime()) / (365.25 * 24 * 60 * 60 * 1000)
+    );
+    if (edad < 18) {
+      this.mostrarErrorRegistro('Debes ser mayor de edad para registrarte');
+      return false;
+    }
     return true;
   }
 
@@ -158,6 +181,7 @@ export class Login {
     return true;
   }
 
+  // ==================== LOGIN ====================
   iniciarSesion() {
     if (!this.usuario || !this.contrasena) {
       this.mostrarErrorLogin('Ingresa usuario y contraseña');
@@ -192,8 +216,14 @@ export class Login {
   }
 
   private guardarSesionYRedirigir(resp: any) {
+    if (!resp || resp.idPersona == null) {
+      this.cargando = false;
+      this.mostrarErrorLogin('Respuesta inválida del servidor');
+      return;
+    }
+
     const usuarioData = {
-      idPersona: resp.idPersona || '',
+      idPersona: resp.idPersona,
       nombre: resp.nombre || '',
       apellido: resp.apellido || '',
       correo: resp.correo || this.usuario,
@@ -212,7 +242,7 @@ export class Login {
   }
 
   private manejarErrorLogin(err: any) {
-    // Si el backend YA envía un código de bloqueo (423)
+    // Bloqueo enviado por backend (423) o mensaje que contiene "bloqueada"
     if (err.status === 423 || err.error?.error?.toLowerCase().includes('bloqueada')) {
       this.activarBloqueoTemporal();
       return;
@@ -230,32 +260,33 @@ export class Login {
         this.errorLogin = `Credenciales incorrectas. Intento ${intentos} de 3.`;
         this.cdr.detectChanges();
       }
-    } else if (err.status === 0) {
-      this.errorLogin = 'No se pudo conectar al servidor';
-      this.cdr.detectChanges();
-    } else {
-      this.errorLogin = err.error?.error || 'Error al iniciar sesión';
-      this.cdr.detectChanges();
+      return;
     }
+
+    if (err.status === 0) {
+      this.mostrarErrorLogin('No se pudo conectar al servidor');
+      return;
+    }
+
+    // IMPORTANTE: si el backend lanza RuntimeException (500) por credenciales,
+    // también deberíamos contarlo. Si tu backend NO devuelve 401, cambia esta
+    // rama para incluir la lógica de conteo.
+    const mensaje = err.error?.error || err.error?.message || 'Error al iniciar sesión';
+    this.mostrarErrorLogin(mensaje);
   }
 
-  /**
-   * Activa el mensaje de bloqueo, limpia el formulario y después de 5 segundos
-   * "refresca" la pantalla para permitir intentar con otra cuenta.
-   */
   private activarBloqueoTemporal() {
-    // 1. Mostrar el bloqueo y limpiar campos
     this.cuentaBloqueada = true;
     this.usuario = '';
     this.contrasena = '';
     this.errorLogin = '';
     this.cdr.detectChanges();
 
-    // 2. Temporizador para "refrescar" la pantalla
-    setTimeout(() => {
+    if (this.timeoutBloqueo) clearTimeout(this.timeoutBloqueo);
+    this.timeoutBloqueo = setTimeout(() => {
       this.cuentaBloqueada = false;
       this.cdr.detectChanges();
-    }, 5000); // 5 segundos (puedes cambiarlo a 3000 si quieres que sea más rápido)
+    }, 5000);
   }
 
   private redirigirPorRol(rol: string) {
@@ -275,11 +306,13 @@ export class Login {
     }
   }
 
+  // ==================== OLVIDO DE CONTRASEÑA ====================
   abrirOlvido() {
     if (this.timeoutErrorLogin) clearTimeout(this.timeoutErrorLogin);
     if (this.timeoutErrorRegistro) clearTimeout(this.timeoutErrorRegistro);
     this.errorLogin = '';
     this.errorRegistro = '';
+    this.errorRecuperacion = '';
     this.mostrarOlvido = true;
     this.correoEnviado = false;
     this.correoRecuperacion = '';
@@ -287,11 +320,18 @@ export class Login {
 
   cerrarOlvido() {
     this.mostrarOlvido = false;
+    this.errorRecuperacion = '';
   }
 
   enviarCorreoRecuperacion() {
-    if (!this.correoRecuperacion) return;
+    if (!this.correoRecuperacion || !this.correoRecuperacion.includes('@')) {
+      this.errorRecuperacion = 'Ingresa un correo válido';
+      this.cdr.detectChanges();
+      return;
+    }
+
     this.enviandoCorreo = true;
+    this.errorRecuperacion = '';
     this.cdr.detectChanges();
 
     this.http.post(`${this.apiUrl}/auth/olvide-contrasena`, {
@@ -302,13 +342,16 @@ export class Login {
         this.correoEnviado = true;
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
         this.enviandoCorreo = false;
+        this.errorRecuperacion =
+          err.error?.error || 'No se pudo enviar el correo. Intenta de nuevo.';
         this.cdr.detectChanges();
       }
     });
   }
 
+  // ==================== REGISTRO ====================
   abrirRegistro() {
     if (this.timeoutErrorRegistro) clearTimeout(this.timeoutErrorRegistro);
     if (this.timeoutErrorLogin) clearTimeout(this.timeoutErrorLogin);
@@ -396,7 +439,6 @@ export class Login {
     input.value = valor;
   }
 
-  // ==================== REGISTRAR ====================
   registrarUsuario() {
     this.errorRegistro = '';
 
@@ -423,14 +465,15 @@ export class Login {
     };
 
     this.http.post(`${this.apiUrl}/auth/register`, body).subscribe({
-      next: (resp: any) => {
+      next: () => {
         this.registrando = false;
         this.cerrarRegistro();
         this.cuentaCreada = true;
         this.usuario = this.correo.trim().toLowerCase();
         this.cdr.detectChanges();
 
-        setTimeout(() => {
+        if (this.timeoutCuentaCreada) clearTimeout(this.timeoutCuentaCreada);
+        this.timeoutCuentaCreada = setTimeout(() => {
           this.cuentaCreada = false;
           this.cdr.detectChanges();
         }, 5000);

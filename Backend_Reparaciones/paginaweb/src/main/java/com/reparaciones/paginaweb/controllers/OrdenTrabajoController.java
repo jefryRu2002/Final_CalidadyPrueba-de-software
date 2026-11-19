@@ -196,7 +196,8 @@ public class OrdenTrabajoController {
     @PutMapping("/{id}/asignar-tecnico/{idTecnico}")
     public ResponseEntity<?> asignarTecnico(@PathVariable Integer id, @PathVariable Integer idTecnico) {
         try {
-            OrdenTrabajo orden = ordenTrabajoService.asignarTecnico(id, idTecnico);
+            // CORREGIDO: usamos el retorno para nada, solo validamos que no lance excepción
+            ordenTrabajoService.asignarTecnico(id, idTecnico);
 
             notificacionService.crearNotificacion(
                 "REPARACION",
@@ -219,8 +220,9 @@ public class OrdenTrabajoController {
     @PutMapping("/{id}/reparacion")
     public ResponseEntity<?> guardarReparacion(@PathVariable Integer id, @RequestBody Map<String, Object> datos) {
         try {
-            List<Map<String, Object>> trabajosMap = (List<Map<String, Object>>) datos.get("trabajos");
-            List<Map<String, Object>> repuestosMap = (List<Map<String, Object>>) datos.get("repuestos");
+            // CORREGIDO: cast seguro con @SuppressWarnings + validación de tipo
+            List<Map<String, Object>> trabajosMap = extraerListaDeMapas(datos.get("trabajos"));
+            List<Map<String, Object>> repuestosMap = extraerListaDeMapas(datos.get("repuestos"));
             String notas = (String) datos.getOrDefault("notas", "");
 
             List<ReparacionTrabajoModel> trabajos = new ArrayList<>();
@@ -344,7 +346,6 @@ public class OrdenTrabajoController {
         data.put("puedePagar", ot.getPuedePagar());
         data.put("notasTecnico", ot.getNotasTecnico());
 
-        // Cotización asociada
         List<CotizacionModel> cots = cotizacionRepository.findByIdOrden(ot.getIdOrden());
         if (!cots.isEmpty()) {
             CotizacionModel cot = cots.get(0);
@@ -395,7 +396,6 @@ public class OrdenTrabajoController {
             }
         }
 
-        // Trabajos y repuestos
         List<ReparacionTrabajoModel> trabajos = reparacionTrabajoRepository.findByOrdenIdOrden(ot.getIdOrden());
         data.put("trabajosRealizados", trabajos.stream()
             .map(ReparacionTrabajoModel::getDescripcion)
@@ -425,6 +425,24 @@ public class OrdenTrabajoController {
     private String getString(Map<String, Object> map, String... keys) {
         Object value = getValue(map, keys);
         return value != null ? value.toString() : null;
+    }
+
+    /**
+     * Convierte un Object a List<Map<String,Object>> de forma segura,
+     * evitando el warning de "unchecked cast".
+     */
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> extraerListaDeMapas(Object obj) {
+        if (obj instanceof List<?> lista) {
+            List<Map<String, Object>> resultado = new ArrayList<>();
+            for (Object item : lista) {
+                if (item instanceof Map<?, ?> mapa) {
+                    resultado.add((Map<String, Object>) mapa);
+                }
+            }
+            return resultado;
+        }
+        return null;
     }
 
     private LocalDate parseFecha(String fechaStr) {

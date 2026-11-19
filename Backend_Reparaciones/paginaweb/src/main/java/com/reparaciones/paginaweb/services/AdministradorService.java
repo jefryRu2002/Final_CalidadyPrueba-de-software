@@ -30,10 +30,18 @@ public class AdministradorService {
         if (administrador.getIdPersona() == null) {
             throw new RuntimeException("El administrador debe tener un idPersona");
         }
+        if (administradorRepository.existsById(administrador.getIdPersona())) {
+            throw new RuntimeException(
+                "Ya existe un administrador con idPersona: " + administrador.getIdPersona()
+            );
+        }
         return administradorRepository.save(administrador);
     }
 
     public void delete(Integer id) {
+        if (!administradorRepository.existsById(id)) {
+            throw new RuntimeException("Administrador no encontrado: " + id);
+        }
         administradorRepository.deleteById(id);
     }
 }

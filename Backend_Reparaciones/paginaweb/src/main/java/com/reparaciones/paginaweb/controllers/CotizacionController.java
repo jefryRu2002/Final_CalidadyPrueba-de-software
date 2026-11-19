@@ -18,16 +18,13 @@ public class CotizacionController {
 
     private final CotizacionRepository cotizacionRepository;
     private final OrdenTrabajoRepository ordenTrabajoRepository;
-    private final PersonaRepository personaRepository;
     private final NotificacionService notificacionService;
 
     public CotizacionController(CotizacionRepository cotizacionRepository,
                                  OrdenTrabajoRepository ordenTrabajoRepository,
-                                 PersonaRepository personaRepository,
                                  NotificacionService notificacionService) {
         this.cotizacionRepository = cotizacionRepository;
         this.ordenTrabajoRepository = ordenTrabajoRepository;
-        this.personaRepository = personaRepository;
         this.notificacionService = notificacionService;
     }
 
@@ -103,7 +100,7 @@ public class CotizacionController {
                 }
             }
 
-            // 🔥 TOTAL = repuestos + mano de obra + trabajos
+            // TOTAL = repuestos + mano de obra + trabajos
             cot.setTotalRepuestos(totalRepuestos);
             cot.setTotal(totalRepuestos.add(cot.getManoObra()).add(totalTrabajos));
 
@@ -267,7 +264,7 @@ public class CotizacionController {
         }
     }
 
-    // ==================== FORMATEAR (con totalTrabajos) ====================
+    // ==================== FORMATEAR ====================
     private Map<String, Object> formatear(CotizacionModel cot) {
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("idCotizacion", cot.getIdCotizacion());
@@ -279,7 +276,6 @@ public class CotizacionController {
         data.put("fechaCreacion", cot.getFechaCreacion());
         data.put("fechaRespuesta", cot.getFechaRespuesta());
 
-        // 🔥 CALCULAR totalTrabajos
         BigDecimal totalTrabajos = cot.getTrabajos().stream()
             .map(t -> t.getCosto() != null ? t.getCosto() : BigDecimal.ZERO)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -310,7 +306,6 @@ public class CotizacionController {
                                       (p.getApellido() != null ? p.getApellido() : "")).trim());
         }
 
-        // 🔥 REPUESTOS
         data.put("repuestos", cot.getRepuestos().stream().map(r -> {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("id", r.getId());
@@ -321,7 +316,6 @@ public class CotizacionController {
             return m;
         }).collect(Collectors.toList()));
 
-        // 🔥 TRABAJOS
         data.put("trabajos", cot.getTrabajos().stream().map(t -> {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("id", t.getId());
