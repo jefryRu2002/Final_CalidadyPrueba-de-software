@@ -30,7 +30,12 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/**").permitAll()
                 .anyRequest().permitAll()
-            );
+            )
+            // 🔓 Desactivar los logins por defecto de Spring
+            .httpBasic(basic -> basic.disable())
+            .formLogin(form -> form.disable())
+            .logout(logout -> logout.disable());
+            
         return http.build();
     }
 
