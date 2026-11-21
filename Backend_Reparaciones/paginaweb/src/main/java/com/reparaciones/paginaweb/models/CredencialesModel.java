@@ -13,7 +13,7 @@ public class CredencialesModel {
     @Column(name = "usuario", length = 45)
     private String usuario;
     
-    @Column(name = "contrasena", length = 16)
+    @Column(name = "contrasena", length = 255)
     private String contrasena;
     
     @Column(name = "rol")

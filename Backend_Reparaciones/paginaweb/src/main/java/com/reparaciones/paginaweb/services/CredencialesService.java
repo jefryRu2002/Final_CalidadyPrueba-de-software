@@ -2,6 +2,7 @@ package com.reparaciones.paginaweb.services;
 
 import com.reparaciones.paginaweb.models.CredencialesModel;
 import com.reparaciones.paginaweb.repositories.CredencialesRepository;
+import org.springframework.security.crypto.password.PasswordEncoder; // ← IMPORTANTE
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -12,9 +13,13 @@ import java.util.Optional;
 public class CredencialesService {
 
     private final CredencialesRepository credencialesRepository;
+    private final PasswordEncoder passwordEncoder; // ← NUEVO
 
-    public CredencialesService(CredencialesRepository credencialesRepository) {
+    // Añadimos el PasswordEncoder al constructor
+    public CredencialesService(CredencialesRepository credencialesRepository,
+                               PasswordEncoder passwordEncoder) {
         this.credencialesRepository = credencialesRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // Obtener todas las credenciales
@@ -33,9 +38,24 @@ public class CredencialesService {
         return credencialesRepository.findByUsuario(usuario);
     }
 
-    // Login: buscar por usuario y contraseña
-    public Optional<CredencialesModel> login(String usuario, String contrasena) {
-        return credencialesRepository.findByUsuarioAndContrasena(usuario, contrasena);
+    // ==================== LOGIN CON HASHING ====================
+    public Optional<CredencialesModel> login(String usuario, String contrasenaPlana) {
+        // 1. Buscamos SOLO por el nombre de usuario (ya no por contraseña)
+        Optional<CredencialesModel> credencialOpt = credencialesRepository.findByUsuario(usuario);
+
+        // 2. Si el usuario existe, comprobamos la contraseña
+        if (credencialOpt.isPresent()) {
+            CredencialesModel cred = credencialOpt.get();
+            String hashEnBaseDeDatos = cred.getContrasena();
+            
+            // 3. Comparamos el texto plano con el hash de la BD
+            if (passwordEncoder.matches(contrasenaPlana, hashEnBaseDeDatos)) {
+                return Optional.of(cred); // Login exitoso
+            }
+        }
+
+        // Si no existe el usuario o la contraseña no coincide
+        return Optional.empty();
     }
 
     // Verificar si existe un usuario
@@ -58,9 +78,12 @@ public class CredencialesService {
         if (credenciales.getUsuario() != null) {
             existente.setUsuario(credenciales.getUsuario());
         }
+        
         if (credenciales.getContrasena() != null) {
-            existente.setContrasena(credenciales.getContrasena());
+            // 🔐 HASHEAMOS LA NUEVA CONTRASEÑA ANTES DE GUARDARLA
+            existente.setContrasena(passwordEncoder.encode(credenciales.getContrasena()));
         }
+        
         if (credenciales.getRol() != null) {
             existente.setRol(credenciales.getRol());
         }

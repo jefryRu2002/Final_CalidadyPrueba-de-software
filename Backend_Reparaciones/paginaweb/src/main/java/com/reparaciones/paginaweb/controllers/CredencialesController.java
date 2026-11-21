@@ -3,6 +3,7 @@ package com.reparaciones.paginaweb.controllers;
 import com.reparaciones.paginaweb.models.*;
 import com.reparaciones.paginaweb.services.*;
 import org.springframework.http.*;
+import org.springframework.security.crypto.password.PasswordEncoder; // ← IMPORTANTE
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.HashMap;
@@ -18,17 +19,20 @@ public class CredencialesController {
     private final ClienteService clienteService;
     private final TecnicoService tecnicoService;
     private final AdministradorService administradorService;
+    private final PasswordEncoder passwordEncoder; // ← NUEVO
 
     public CredencialesController(CredencialesService credencialesService,
                                    PersonaService personaService,
                                    ClienteService clienteService,
                                    TecnicoService tecnicoService,
-                                   AdministradorService administradorService) {
+                                   AdministradorService administradorService,
+                                   PasswordEncoder passwordEncoder) { // ← NUEVO
         this.credencialesService = credencialesService;
         this.personaService = personaService;
         this.clienteService = clienteService;
         this.tecnicoService = tecnicoService;
         this.administradorService = administradorService;
+        this.passwordEncoder = passwordEncoder; // ← NUEVO
     }
 
     // ==================== LOGIN ====================
@@ -134,12 +138,13 @@ public class CredencialesController {
             CredencialesModel cred = new CredencialesModel();
             cred.setIdPersona(personaGuardada.getIdPersona());
             cred.setUsuario(usuario.trim());
-            cred.setContrasena(contrasena);
+            // 🔐 AQUÍ APLICAMOS EL HASH:
+            cred.setContrasena(passwordEncoder.encode(contrasena)); 
             cred.setRol(rol);
             cred.setEstado(1);  // 1 = ACTIVO
             
             credencialesService.save(cred);
-            System.out.println(">>> [REGISTRO] Credencial guardada: " + usuario);
+            System.out.println(">>> [REGISTRO] Credencial guardada (con hash): " + usuario);
 
             // 3. Crear Cliente (SIEMPRE)
             ClienteModel cliente = new ClienteModel();
@@ -215,7 +220,8 @@ public class CredencialesController {
             CredencialesModel cred = new CredencialesModel();
             cred.setIdPersona(personaGuardada.getIdPersona());
             cred.setUsuario(usuario.trim());
-            cred.setContrasena(contrasena);
+            // 🔐 AQUÍ APLICAMOS EL HASH:
+            cred.setContrasena(passwordEncoder.encode(contrasena)); 
             cred.setRol(rol);
             cred.setEstado(1);
             credencialesService.save(cred);

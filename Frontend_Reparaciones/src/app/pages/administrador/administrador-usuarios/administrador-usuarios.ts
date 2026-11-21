@@ -58,17 +58,34 @@ export class AdministradorUsuarios implements OnInit {
     this.http.get<any[]>(`${this.apiUrl}/admin/usuarios`).subscribe({
       next: (data) => {
         console.log('✅ Usuarios cargados:', data?.length);
-        
-        this.usuarios = (data || []).map(u => ({
-          id: u.idPersona,
-          nombre: u.nombre || '',
-          apellido: u.apellido || '',
-          correo: u.correo || '',
-          telefono: u.telefono || '',
-          dni: u.dni || '',
-          rol: u.rol || 'CLIENTE',
-          estado: u.estado === 1 ? 'Activo' : 'Inactivo'
-        }));
+
+        this.usuarios = (data || []).map(u => {
+          // 🔒 El bloqueo AHORA viene del backend, no de localStorage
+          const bloqueado = u.bloqueado === true
+                          || u.bloqueadoPermanente === true;
+
+          let estadoReal: string;
+          if (bloqueado) {
+            estadoReal = 'Bloqueado';
+          } else {
+            estadoReal = u.estado === 1 ? 'Activo' : 'Inactivo';
+          }
+
+          return {
+            id: u.idPersona,
+            nombre: u.nombre || '',
+            apellido: u.apellido || '',
+            correo: u.correo || '',
+            telefono: u.telefono || '',
+            dni: u.dni || '',
+            rol: u.rol || 'CLIENTE',
+            estado: estadoReal,
+            // Guardamos datos de bloqueo para mostrarlos si quieres
+            intentosFallidos: u.intentosFallidos ?? 0,
+            bloqueadoHasta: u.bloqueadoHasta ?? null,
+            bloqueadoPermanente: u.bloqueadoPermanente ?? false
+          };
+        });
 
         this.actualizarContadores();
         this.cargando = false;
@@ -114,11 +131,11 @@ export class AdministradorUsuarios implements OnInit {
     return this.usuarios.filter(u => {
       const nombreCompleto = `${u.nombre} ${u.apellido}`.toLowerCase();
       const q = this.buscador.toLowerCase().trim();
-      const coincideBusqueda = !q || 
-        nombreCompleto.includes(q) || 
-        (u.correo || '').toLowerCase().includes(q) || 
+      const coincideBusqueda = !q ||
+        nombreCompleto.includes(q) ||
+        (u.correo || '').toLowerCase().includes(q) ||
         (u.dni || '').includes(q);
-      
+
       const coincideRol = !this.filtroRol || u.rol === this.filtroRol;
       return coincideBusqueda && coincideRol;
     });
@@ -178,7 +195,7 @@ export class AdministradorUsuarios implements OnInit {
         this.buscandoDni = false;
         this.cdr.detectChanges();
       },
-      error: () => { 
+      error: () => {
         this.buscandoDni = false;
         this.cdr.detectChanges();
       }
@@ -226,7 +243,7 @@ export class AdministradorUsuarios implements OnInit {
         console.error('❌ Error:', err);
         this.guardandoUsuario = false;
         this.cdr.detectChanges();
-        
+
         let mensaje = 'No se pudo crear el usuario';
         if (err.status === 409) mensaje = 'El correo o DNI ya está registrado';
         else if (err.error?.error) mensaje = err.error.error;
@@ -235,11 +252,34 @@ export class AdministradorUsuarios implements OnInit {
     });
   }
 
-  // ==================== CAMBIAR ESTADO ====================
+  // ==================== CAMBIAR ESTADO / DESBLOQUEAR ====================
   cambiarEstado(usuario: any): void {
+    // 🔓 Si está bloqueado → desbloquear desde el BACKEND
+    if (usuario.estado === 'Bloqueado') {
+      if (!confirm(`¿Desbloquear a ${usuario.nombre} ${usuario.apellido}?\nPodrá volver a iniciar sesión.`)) return;
+
+      this.http.put(`${this.apiUrl}/admin/usuarios/${usuario.id}/desbloquear`, {})
+        .subscribe({
+          next: () => {
+            usuario.estado = 'Activo';
+            usuario.intentosFallidos = 0;
+            usuario.bloqueadoHasta = null;
+            usuario.bloqueadoPermanente = false;
+            this.cdr.detectChanges();
+            alert('🔓 Cuenta desbloqueada correctamente.');
+          },
+          error: (err) => {
+            console.error('❌ Error al desbloquear:', err);
+            alert('❌ No se pudo desbloquear: ' + (err.error?.error || err.message));
+          }
+        });
+      return;
+    }
+
+    // Activar / desactivar normal
     const nuevoEstado = usuario.estado === 'Activo' ? 0 : 1;
     const accion = nuevoEstado === 1 ? 'activar' : 'desactivar';
-    
+
     if (!confirm(`¿${accion} a ${usuario.nombre} ${usuario.apellido}?`)) return;
 
     this.http.put(`${this.apiUrl}/admin/usuarios/${usuario.id}/estado`, {
@@ -270,7 +310,6 @@ export class AdministradorUsuarios implements OnInit {
       error: (err) => {
         console.error('❌ Error:', err);
         alert('Error al eliminar');
-        
       }
     });
   }
