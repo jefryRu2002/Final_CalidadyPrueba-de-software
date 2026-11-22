@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './services/auth.guard'; // Ajusta la ruta si es necesario
 
 // ==================== COMPONENTES ====================
 import { Login } from './pages/login/login/login';
@@ -30,6 +31,7 @@ import { ClienteCotizacion } from './pages/cliente/cliente-cotizacion/cliente-co
 import { Cliente } from './pages/cliente/cliente/cliente';
 
 export const routes: Routes = [
+    // ==================== PÚBLICAS ====================
     { path: '', component: Login },
     { path: 'login', component: Login },
 
@@ -37,6 +39,8 @@ export const routes: Routes = [
     {
         path: 'administrador',
         component: AdminLayout,
+        canActivate: [authGuard], // ✅ Protegido
+        data: { roles: ['ADMINISTRADOR', 'ADMIN'] },
         children: [
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
             { path: 'dashboard', component: AdministradorDashboard },
@@ -54,6 +58,8 @@ export const routes: Routes = [
     {
         path: 'tecnico',
         component: TecnicoLayout,
+        canActivate: [authGuard], // ✅ Protegido
+        data: { roles: ['TECNICO', 'TÉCNICO'] },
         children: [
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
             { path: 'dashboard', component: TecnicoDashboard },
@@ -69,6 +75,8 @@ export const routes: Routes = [
     {
         path: 'cliente',
         component: ClienteLayout,
+        canActivate: [authGuard], // ✅ Protegido
+        data: { roles: ['CLIENTE'] },
         children: [
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
             { path: 'dashboard', component: ClienteDashboard },

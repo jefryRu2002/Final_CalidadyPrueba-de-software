@@ -35,10 +35,19 @@ export class AuthService {
   // Cerrar sesión
   cerrarSesion() {
     localStorage.removeItem('usuario');
+    localStorage.removeItem('idPersona'); // Limpieza extra por si acaso
+    localStorage.removeItem('token');     // Limpieza extra por si acaso
   }
 
   // Verificar autenticado
   isAuthenticated(): boolean {
     return !!this.obtenerSesion();
+  }
+
+  // ✅ NUEVO MÉTODO: Devuelve el rol en mayúsculas (ADMINISTRADOR, TECNICO o CLIENTE)
+  obtenerRol(): string | null {
+    const sesion = this.obtenerSesion();
+    if (!sesion || !sesion.rol) return null;
+    return sesion.rol.toUpperCase(); 
   }
 }
