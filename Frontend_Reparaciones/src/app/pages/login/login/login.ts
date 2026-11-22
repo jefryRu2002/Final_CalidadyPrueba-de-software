@@ -66,7 +66,7 @@ export class Login implements OnDestroy {
     this.timeoutErrorLogin = setTimeout(() => {
       this.errorLogin = '';
       this.cdr.detectChanges();
-    }, 3000);
+    }, 4000); // Aumenté el tiempo a 4s para que el usuario pueda leer mejor
   }
 
   private mostrarErrorRegistro(mensaje: string) {
@@ -76,7 +76,7 @@ export class Login implements OnDestroy {
     this.timeoutErrorRegistro = setTimeout(() => {
       this.errorRegistro = '';
       this.cdr.detectChanges();
-    }, 3000);
+    }, 4000);
   }
 
   // ==================== LÓGICA DE BLOQUEO POR USUARIO ====================
@@ -242,37 +242,60 @@ export class Login implements OnDestroy {
   }
 
   private manejarErrorLogin(err: any) {
-    // Bloqueo enviado por backend (423) o mensaje que contiene "bloqueada"
+    // 1. Bloqueo enviado por backend (423) o mensaje que contiene "bloqueada"
     if (err.status === 423 || err.error?.error?.toLowerCase().includes('bloqueada')) {
       this.activarBloqueoTemporal();
       return;
     }
 
-    // Credenciales incorrectas (401 / 403)
+    // 2. Credenciales incorrectas (401 / 403)
     if (err.status === 401 || err.status === 403) {
-      let intentos = this.obtenerIntentos(this.usuario);
-      intentos++;
-      this.guardarIntentos(this.usuario, intentos);
-
-      if (intentos >= 3) {
-        this.activarBloqueoTemporal();
-      } else {
-        this.errorLogin = `Credenciales incorrectas. Intento ${intentos} de 3.`;
-        this.cdr.detectChanges();
-      }
+      this.incrementarIntentoFallido();
       return;
     }
 
+    // 3. Error de conexión
     if (err.status === 0) {
       this.mostrarErrorLogin('No se pudo conectar al servidor');
       return;
     }
 
-    // IMPORTANTE: si el backend lanza RuntimeException (500) por credenciales,
-    // también deberíamos contarlo. Si tu backend NO devuelve 401, cambia esta
-    // rama para incluir la lógica de conteo.
-    const mensaje = err.error?.error || err.error?.message || 'Error al iniciar sesión';
+    // ✅ 4. FIX: Error 500 - El backend falla cuando el usuario NO existe.
+    if (err.status === 500) {
+      // Intentamos extraer el mensaje real del backend
+      const mensajeBackend = (err.error?.message || err.error?.error || '').toLowerCase();
+      
+      if (
+        mensajeBackend.includes('no encontrado') ||
+        mensajeBackend.includes('no existe') ||
+        mensajeBackend.includes('no registrado')
+      ) {
+        // El backend confirma que el usuario no existe
+        this.mostrarErrorLogin('El usuario no se encuentra registrado. Por favor, regístrate primero.');
+      } else {
+        // Si el backend falla pero no sabemos por qué (ej: error de BD), mostramos un mensaje genérico
+        this.mostrarErrorLogin('No se pudo iniciar sesión. Verifica tus datos o regístrate si aún no tienes cuenta.');
+      }
+      return;
+    }
+
+    // 5. Otros errores
+    const mensaje = err.error?.message || err.error?.error || 'Error al iniciar sesión';
     this.mostrarErrorLogin(mensaje);
+  }
+
+  // ✅ Método para cuando la contraseña es incorrecta (el usuario SÍ existe)
+  private incrementarIntentoFallido() {
+    let intentos = this.obtenerIntentos(this.usuario);
+    intentos++;
+    this.guardarIntentos(this.usuario, intentos);
+
+    if (intentos >= 3) {
+      this.activarBloqueoTemporal();
+    } else {
+      this.errorLogin = `Contraseña incorrecta. Intento ${intentos} de 3.`;
+      this.cdr.detectChanges();
+    }
   }
 
   private activarBloqueoTemporal() {
@@ -344,8 +367,11 @@ export class Login implements OnDestroy {
       },
       error: (err) => {
         this.enviandoCorreo = false;
-        this.errorRecuperacion =
-          err.error?.error || 'No se pudo enviar el correo. Intenta de nuevo.';
+        if (err.status === 500) {
+          this.errorRecuperacion = 'No se pudo enviar el correo. Verifica que el correo esté registrado.';
+        } else {
+          this.errorRecuperacion = err.error?.message || err.error?.error || 'No se pudo enviar el correo. Intenta de nuevo.';
+        }
         this.cdr.detectChanges();
       }
     });
@@ -486,18 +512,23 @@ export class Login implements OnDestroy {
   }
 
   private manejarErrorRegistro(err: any) {
+    if (err.status === 500) {
+      this.mostrarErrorRegistro('Ocurrió un error inesperado en el servidor. Por favor, intenta de nuevo.');
+      return;
+    }
+
     switch (err.status) {
       case 409:
-        this.mostrarErrorRegistro(err.error?.error || 'El correo ya está registrado');
+        this.mostrarErrorRegistro(err.error?.message || err.error?.error || 'El correo ya está registrado');
         break;
       case 400:
-        this.mostrarErrorRegistro(err.error?.error || 'Datos inválidos');
+        this.mostrarErrorRegistro(err.error?.message || err.error?.error || 'Datos inválidos');
         break;
       case 0:
         this.mostrarErrorRegistro('No se pudo conectar al servidor');
         break;
       default:
-        this.mostrarErrorRegistro(err.error?.error || 'Error al crear la cuenta');
+        this.mostrarErrorRegistro(err.error?.message || err.error?.error || 'Error al crear la cuenta');
         break;
     }
   }
