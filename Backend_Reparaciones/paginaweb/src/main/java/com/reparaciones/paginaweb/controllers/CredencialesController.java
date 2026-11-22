@@ -32,11 +32,46 @@ public class CredencialesController {
         if (usuario == null || usuario.trim().isEmpty()
                 || contrasena == null || contrasena.isEmpty()) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Usuario y contraseña son obligatorios"));
+                    .body(Map.of("success", false, "message", "Usuario y contraseña son obligatorios"));
         }
 
-        Map<String, Object> respuesta = authService.login(usuario.trim(), contrasena);
-        return ResponseEntity.ok(respuesta);
+        try {
+            // ✅ Llamada al servicio de autenticación
+            Map<String, Object> respuesta = authService.login(usuario.trim(), contrasena);
+            return ResponseEntity.ok(respuesta);
+
+        } catch (RuntimeException e) {
+            String mensaje = e.getMessage();
+
+            if ("USUARIO_NO_ENCONTRADO".equals(mensaje)) {
+                // ✅ 404: El usuario no existe (NO cuenta como intento en el frontend)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "success", false,
+                    "message", "El usuario no se encuentra registrado. Por favor, regístrate primero."
+                ));
+            }
+            
+            if ("CONTRASENA_INCORRECTA".equals(mensaje)) {
+                // ✅ 401: La contraseña está mal (SÍ cuenta como intento en el frontend)
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "success", false,
+                    "message", "Contraseña incorrecta."
+                ));
+            }
+
+            // Para "Usuario desactivado" u otros errores de lógica → 401
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                "success", false,
+                "message", mensaje != null ? mensaje : "Credenciales incorrectas"
+            ));
+
+        } catch (Exception e) {
+            // Errores reales (BD caída, etc.) → 500 con mensaje limpio (sin trace)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                "success", false,
+                "message", "Error interno del servidor"
+            ));
+        }
     }
 
     // ==================== REGISTRO PÚBLICO (siempre CLIENTE) ====================

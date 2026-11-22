@@ -97,7 +97,8 @@ public class AuthService {
         Optional<CredencialesModel> credOpt = credencialesRepository.findByUsuario(usuario);
 
         if (credOpt.isEmpty()) {
-            throw new RuntimeException("Usuario o contraseña incorrectos");
+            // ✅ Lanzamos una excepción específica para "Usuario no encontrado"
+            throw new RuntimeException("USUARIO_NO_ENCONTRADO");
         }
 
         CredencialesModel cred = credOpt.get();
@@ -108,7 +109,8 @@ public class AuthService {
 
         // Comparar contraseña ingresada con el hash almacenado
         if (!passwordEncoder.matches(contrasena, cred.getContrasena())) {
-            throw new RuntimeException("Usuario o contraseña incorrectos");
+            // ✅ Contraseña incorrecta (el usuario SÍ existe)
+            throw new RuntimeException("CONTRASENA_INCORRECTA");
         }
 
         // Obtener datos de la persona

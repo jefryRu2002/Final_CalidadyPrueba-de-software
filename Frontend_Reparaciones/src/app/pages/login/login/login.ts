@@ -66,7 +66,7 @@ export class Login implements OnDestroy {
     this.timeoutErrorLogin = setTimeout(() => {
       this.errorLogin = '';
       this.cdr.detectChanges();
-    }, 4000); // Aumenté el tiempo a 4s para que el usuario pueda leer mejor
+    }, 4000);
   }
 
   private mostrarErrorRegistro(mensaje: string) {
@@ -242,50 +242,43 @@ export class Login implements OnDestroy {
   }
 
   private manejarErrorLogin(err: any) {
-    // 1. Bloqueo enviado por backend (423) o mensaje que contiene "bloqueada"
-    if (err.status === 423 || err.error?.error?.toLowerCase().includes('bloqueada')) {
+    // 1. Bloqueo enviado por backend (423)
+    if (err.status === 423) {
       this.activarBloqueoTemporal();
       return;
     }
 
-    // 2. Credenciales incorrectas (401 / 403)
-    if (err.status === 401 || err.status === 403) {
-      this.incrementarIntentoFallido();
+    // ✅ 2. Usuario NO encontrado (404) -> NO cuenta intento
+    if (err.status === 404) {
+      this.mostrarErrorLogin(err.error?.message || 'El usuario no se encuentra registrado.');
       return;
     }
 
-    // 3. Error de conexión
+    // ✅ 3. Contraseña incorrecta (401) -> SÍ cuenta intento
+    if (err.status === 401) {
+      this.incrementarIntentoFallido(err.error?.message || 'Contraseña incorrecta.');
+      return;
+    }
+
+    // 4. Error de conexión
     if (err.status === 0) {
       this.mostrarErrorLogin('No se pudo conectar al servidor');
       return;
     }
 
-    // ✅ 4. FIX: Error 500 - El backend falla cuando el usuario NO existe.
+    // 5. Error 500 real (servidor caído, no cuenta intento)
     if (err.status === 500) {
-      // Intentamos extraer el mensaje real del backend
-      const mensajeBackend = (err.error?.message || err.error?.error || '').toLowerCase();
-      
-      if (
-        mensajeBackend.includes('no encontrado') ||
-        mensajeBackend.includes('no existe') ||
-        mensajeBackend.includes('no registrado')
-      ) {
-        // El backend confirma que el usuario no existe
-        this.mostrarErrorLogin('El usuario no se encuentra registrado. Por favor, regístrate primero.');
-      } else {
-        // Si el backend falla pero no sabemos por qué (ej: error de BD), mostramos un mensaje genérico
-        this.mostrarErrorLogin('No se pudo iniciar sesión. Verifica tus datos o regístrate si aún no tienes cuenta.');
-      }
+      this.mostrarErrorLogin('Ocurrió un error inesperado en el servidor. Por favor, intenta más tarde.');
       return;
     }
 
-    // 5. Otros errores
-    const mensaje = err.error?.message || err.error?.error || 'Error al iniciar sesión';
+    // 6. Otros errores
+    const mensaje = err.error?.message || 'Error al iniciar sesión';
     this.mostrarErrorLogin(mensaje);
   }
 
   // ✅ Método para cuando la contraseña es incorrecta (el usuario SÍ existe)
-  private incrementarIntentoFallido() {
+  private incrementarIntentoFallido(mensajeBase: string) {
     let intentos = this.obtenerIntentos(this.usuario);
     intentos++;
     this.guardarIntentos(this.usuario, intentos);
@@ -293,7 +286,7 @@ export class Login implements OnDestroy {
     if (intentos >= 3) {
       this.activarBloqueoTemporal();
     } else {
-      this.errorLogin = `Contraseña incorrecta. Intento ${intentos} de 3.`;
+      this.errorLogin = `${mensajeBase} Intento ${intentos} de 3.`;
       this.cdr.detectChanges();
     }
   }
