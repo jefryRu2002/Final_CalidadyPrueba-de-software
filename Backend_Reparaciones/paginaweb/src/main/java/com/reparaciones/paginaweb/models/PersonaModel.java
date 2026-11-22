@@ -12,19 +12,11 @@ public class PersonaModel {
     @Column(name = "id_persona")
     private Integer idPersona;
 
-<<<<<<< HEAD
-    @Column(name = "nombre", length = 100)
-    private String nombre;  // En BD es "nombres"
-
-    @Column(name = "apellido", length = 100)
-    private String apellido;  // En BD es "apellidos"
-=======
     @Column(name = "nombres", length = 100)
     private String nombre;
 
     @Column(name = "apellidos", length = 100)
     private String apellido;
->>>>>>> rama-secundaria
 
     @Column(length = 255)
     private String correo;
@@ -51,7 +43,7 @@ public class PersonaModel {
     @Column(name = "bloqueado_permanente", nullable = false)
     private Boolean bloqueadoPermanente = false;
 
-    // ===== Getters / Setters existentes =====
+    // ===== Getters / Setters =====
     public PersonaModel() {}
 
     public Integer getIdPersona() { return idPersona; }
@@ -78,7 +70,6 @@ public class PersonaModel {
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
 
-    // ===== NUEVOS getters / setters =====
     public Integer getIntentosFallidos() { return intentosFallidos; }
     public void setIntentosFallidos(Integer intentosFallidos) { this.intentosFallidos = intentosFallidos; }
 

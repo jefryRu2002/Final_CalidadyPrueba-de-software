@@ -26,14 +26,14 @@
 
     <form (ngSubmit)="iniciarSesion()" (submit)="$event.preventDefault()">
       <div class="input-group">
-        <label>Correo</label>
-        <input type="text" placeholder="Correo o usuario" [(ngModel)]="usuario" name="usuario" required>
+        <label for="loginUsuario">Correo</label>
+        <input id="loginUsuario" type="text" placeholder="Correo o usuario" [(ngModel)]="usuario" name="usuario" required>
       </div>
       <div class="input-group">
-        <label>Contraseña</label>
-        <input type="password" placeholder="Contraseña" [(ngModel)]="contrasena" name="contrasena" required>
+        <label for="loginContrasena">Contraseña</label>
+        <input id="loginContrasena" type="password" placeholder="Contraseña" [(ngModel)]="contrasena" name="contrasena" required>
       </div>
-      
+
       <!-- El botón se deshabilita si está cargando O si la cuenta ya está bloqueada -->
       <button type="submit" class="btn-login" [disabled]="cargando || cuentaBloqueada">
         {{ cargando ? '⏳ Ingresando...' : 'Iniciar sesión' }}
@@ -58,8 +58,8 @@
         <p>Ingresa tu correo electrónico y te enviaremos un enlace para restablecerla.</p>
         <form (ngSubmit)="enviarCorreoRecuperacion()" (submit)="$event.preventDefault()">
           <div class="input-group">
-            <label>Correo Electrónico</label>
-            <input type="email" placeholder="ejemplo@correo.com" [(ngModel)]="correoRecuperacion" name="correoRecuperacion" required>
+            <label for="correoRecuperacion">Correo Electrónico</label>
+            <input id="correoRecuperacion" type="email" placeholder="ejemplo@correo.com" [(ngModel)]="correoRecuperacion" name="correoRecuperacion" required>
           </div>
           <button type="submit" class="btn-enviar" [disabled]="enviandoCorreo">
             {{ enviandoCorreo ? 'Enviando...' : 'Enviar Enlace' }}
@@ -90,9 +90,10 @@
 
         <!-- DNI con botón buscar -->
         <div class="input-group">
-          <label>DNI</label>
+          <label for="regDni">DNI</label>
           <div class="dni-search">
             <input
+              id="regDni"
               type="text"
               placeholder="Ingrese DNI"
               [(ngModel)]="dni"
@@ -114,8 +115,9 @@
 
         <!-- NOMBRES (solo lectura, autocompletado por RENIEC) -->
         <div class="input-group">
-          <label>Nombres</label>
+          <label for="regNombres">Nombres</label>
           <input
+            id="regNombres"
             type="text"
             placeholder="Nombres"
             [(ngModel)]="nombres"
@@ -127,8 +129,9 @@
 
         <!-- APELLIDOS (solo lectura, autocompletado por RENIEC) -->
         <div class="input-group">
-          <label>Apellidos</label>
+          <label for="regApellidos">Apellidos</label>
           <input
+            id="regApellidos"
             type="text"
             placeholder="Apellidos"
             [(ngModel)]="apellidos"
@@ -139,13 +142,14 @@
         </div>
 
         <div class="input-group">
-          <label>Correo Electrónico</label>
-          <input type="email" placeholder="ejemplo@correo.com" [(ngModel)]="correo" name="correo" required>
+          <label for="regCorreo">Correo Electrónico</label>
+          <input id="regCorreo" type="email" placeholder="ejemplo@correo.com" [(ngModel)]="correo" name="correo" required>
         </div>
 
         <div class="input-group">
-          <label>Teléfono</label>
+          <label for="regTelefono">Teléfono</label>
           <input
+            id="regTelefono"
             type="tel"
             placeholder="987654321"
             [(ngModel)]="telefono"
@@ -158,8 +162,9 @@
 
         <!-- FECHA DE NACIMIENTO (habilitado, pero sin escritura por teclado) -->
         <div class="input-group">
-          <label>Fecha de Nacimiento</label>
+          <label for="regFechaNacimiento">Fecha de Nacimiento</label>
           <input
+            id="regFechaNacimiento"
             type="date"
             [(ngModel)]="fechaNacimiento"
             name="fechaNacimiento"
@@ -169,13 +174,13 @@
         </div>
 
         <div class="input-group">
-          <label>Contraseña</label>
-          <input type="password" placeholder="Cree una contraseña" [(ngModel)]="contrasenaRegistro" name="contrasenaRegistro" required>
+          <label for="regContrasena">Contraseña</label>
+          <input id="regContrasena" type="password" placeholder="Cree una contraseña" [(ngModel)]="contrasenaRegistro" name="contrasenaRegistro" required>
         </div>
 
         <div class="input-group">
-          <label>Confirmar Contraseña</label>
-          <input type="password" placeholder="Repita la contraseña" [(ngModel)]="confirmarContrasena" name="confirmarContrasena" required>
+          <label for="regConfirmarContrasena">Confirmar Contraseña</label>
+          <input id="regConfirmarContrasena" type="password" placeholder="Repita la contraseña" [(ngModel)]="confirmarContrasena" name="confirmarContrasena" required>
         </div>
 
         @if (errorRegistro) {
@@ -189,4 +194,4 @@
       </form>
     </div>
   </div>
-} 
+}

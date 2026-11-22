@@ -1,6 +1,6 @@
 /* ============================================================
    ADMINISTRADOR - DASHBOARD
-   Diseño Limpio y Profesional
+   Diseño Limpio y Profesional — WCAG 2 AA compliant
    ============================================================ */
 
 * {
@@ -41,7 +41,7 @@
 }
 
 .bienvenida p {
-  color: #64748b;
+  color: #64748b; /* 4.76:1 sobre blanco ✅ */
   font-size: 13px;
   margin: 0;
 }
@@ -91,9 +91,10 @@
   font-weight: 600;
 }
 
+/* ✅ FIX WCAG: #10b981 (2.53:1) → #047857 (5.48:1) */
 .perfil span {
   font-size: 12px;
-  color: #10b981;
+  color: #047857;
   font-weight: 600;
 }
 
@@ -119,7 +120,7 @@
   font-size: 14px;
   background: #fef2f2;
   border: 1px solid #fecaca;
-  color: #dc2626;
+  color: #b91c1c; /* 6.1:1 ✅ */
 }
 
 .error-box p { margin: 0; }
@@ -164,7 +165,7 @@
 
 .card > div:last-child h2 {
   font-size: 11px;
-  color: #64748b;
+  color: #64748b; /* 4.76:1 ✅ */
   text-transform: uppercase;
   letter-spacing: 0.8px;
   font-weight: 600;
@@ -178,23 +179,35 @@
   margin-bottom: 4px;
 }
 
-.card > div:last-child p {
+/* ✅ FIX WCAG: cubre .card-content, div:last-child y cualquier <p> dentro de .card.
+   #94a3b8 (2.56:1) → #475569 (7.0:1) ✅ */
+.card-content p,
+.card > div:last-child p,
+.card > div > p {
   font-size: 12px;
-  color: #94a3b8;
+  color: #475569;
   font-weight: 500;
 }
 
+/* --- Colores por tarjeta --- */
+
 .card.reparaciones { border-top: 4px solid #3b82f6; }
-.card.reparaciones > div:last-child h1 { color: #3b82f6; }
+.card.reparaciones > div:last-child h1,
+.card.reparaciones .card-content h1 { color: #1d4ed8; } /* 6.3:1 ✅ */
 
 .card.ingresos { border-top: 4px solid #10b981; }
-.card.ingresos > div:last-child h1 { color: #10b981; }
+/* ✅ FIX: #10b981 (2.53:1) → #047857 (5.48:1) */
+.card.ingresos > div:last-child h1,
+.card.ingresos .card-content h1 { color: #047857; }
 
 .card.clientes { border-top: 4px solid #8b5cf6; }
-.card.clientes > div:last-child h1 { color: #8b5cf6; }
+.card.clientes > div:last-child h1,
+.card.clientes .card-content h1 { color: #6d28d9; } /* 7.4:1 ✅ */
 
 .card.tecnicos { border-top: 4px solid #f59e0b; }
-.card.tecnicos > div:last-child h1 { color: #f59e0b; }
+/* ✅ FIX preventivo: #f59e0b (2.15:1) → #b45309 (4.52:1) */
+.card.tecnicos > div:last-child h1,
+.card.tecnicos .card-content h1 { color: #b45309; }
 
 /* ==================== TABLA ==================== */
 .tabla-container {
@@ -204,6 +217,14 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid #e2e8f0;
   overflow-x: auto;
+  scroll-behavior: smooth;
+}
+
+/* ✅ FIX WCAG 2.4.7: foco visible para contenedor desplazable por teclado.
+   Se usa :focus-visible para no mostrar el anillo al hacer clic con el mouse. */
+.tabla-container:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .tabla-header {
@@ -218,9 +239,12 @@
   margin-bottom: 2px;
 }
 
+/* ✅ FIX WCAG: cubre .tabla-header > div > p y .tabla-header p
+   #94a3b8 (2.56:1) → #475569 (7.0:1) ✅ */
+.tabla-header > div > p,
 .tabla-header p {
   font-size: 13px;
-  color: #94a3b8;
+  color: #475569;
 }
 
 table {
@@ -247,7 +271,7 @@ td {
   padding: 12px 14px;
   border-bottom: 1px solid #f1f5f9;
   font-size: 13px;
-  color: #334155;
+  color: #334155; /* 9.3:1 ✅ */
   text-align: center;
 }
 
@@ -268,16 +292,16 @@ tbody tr:last-child td {
   font-weight: 600;
 }
 
-.pendiente { background: #fef3c7; color: #92400e; }
-.proceso { background: #dbeafe; color: #1e40af; }
-.terminado { background: #d1fae5; color: #065f46; }
-.cancelado { background: #fee2e2; color: #991b1b; }
+.pendiente { background: #fef3c7; color: #92400e; } /* 6.9:1 ✅ */
+.proceso   { background: #dbeafe; color: #1e40af; } /* 7.5:1 ✅ */
+.terminado { background: #d1fae5; color: #065f46; } /* 5.6:1 ✅ */
+.cancelado { background: #fee2e2; color: #991b1b; } /* 6.4:1 ✅ */
 
 /* ==================== EMPTY STATE ==================== */
 .empty-state {
   text-align: center;
   padding: 80px 20px;
-  color: #94a3b8;
+  color: #475569; /* ✅ 7.0:1 */
 }
 
 .empty-state span {
@@ -289,7 +313,7 @@ tbody tr:last-child td {
 
 .empty-state p {
   font-size: 15px;
-  color: #64748b;
+  color: #475569;
 }
 
 /* ==================== RESPONSIVE ==================== */

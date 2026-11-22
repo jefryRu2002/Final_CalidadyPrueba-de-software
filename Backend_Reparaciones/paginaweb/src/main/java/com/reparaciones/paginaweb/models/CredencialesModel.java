@@ -14,14 +14,9 @@ public class CredencialesModel {
 
     @Column(name = "usuario", length = 100, nullable = false)
     private String usuario;
-<<<<<<< HEAD
 
     @JsonIgnore
     @Column(name = "contrasena", length = 250, nullable = false)
-=======
-    
-    @Column(name = "contrasena", length = 255)
->>>>>>> rama-secundaria
     private String contrasena;
 
     @Column(name = "rol", nullable = false)
