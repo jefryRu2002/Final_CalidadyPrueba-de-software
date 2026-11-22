@@ -38,23 +38,10 @@ export class Login implements OnDestroy {
   buscandoDni: boolean = false;
   registrando: boolean = false;
 
-  // ===== Configuración del bloqueo =====
-  private readonly MAX_INTENTOS = 3;
-  private readonly BLOQUEO_MS = 5_000;         // bloqueo real: 5 s
-  private readonly BLOQUEO_VISUAL_MS = 1_000;   // mensaje fuerte: 1 s (luego cuenta atrás)
-
   private timeoutErrorLogin: any;
   private timeoutErrorRegistro: any;
-<<<<<<< HEAD
   private timeoutBloqueo: any;
   private timeoutCuentaCreada: any;
-=======
-  private intervalBloqueo: any;
-  private timeoutFaseVisual: any;
-
-  /** Usuario bloqueado actualmente (para poder limpiar su estado al expirar) */
-  private usuarioBloqueado: string = '';
->>>>>>> rama-secundaria
 
   private apiUrl = 'http://localhost:8080/api';
 
@@ -64,7 +51,6 @@ export class Login implements OnDestroy {
     private cdr: ChangeDetectorRef
   ) {}
 
-<<<<<<< HEAD
   ngOnDestroy(): void {
     if (this.timeoutErrorLogin) clearTimeout(this.timeoutErrorLogin);
     if (this.timeoutErrorRegistro) clearTimeout(this.timeoutErrorRegistro);
@@ -72,8 +58,6 @@ export class Login implements OnDestroy {
     if (this.timeoutCuentaCreada) clearTimeout(this.timeoutCuentaCreada);
   }
 
-=======
->>>>>>> rama-secundaria
   // ==================== HELPERS DE ERROR ====================
   private mostrarErrorLogin(mensaje: string) {
     if (this.timeoutErrorLogin) clearTimeout(this.timeoutErrorLogin);
@@ -95,7 +79,6 @@ export class Login implements OnDestroy {
     }, 3000);
   }
 
-<<<<<<< HEAD
   // ==================== LÓGICA DE BLOQUEO POR USUARIO ====================
   private obtenerIntentos(usuario: string): number {
     const clave = `coltech_intentos_${usuario.toLowerCase().trim()}`;
@@ -115,49 +98,40 @@ export class Login implements OnDestroy {
   abrirCalendario(event: Event) {
     const input = event.target as HTMLInputElement;
     input.showPicker?.();
-=======
-  // ==================== BLOQUEO POR USUARIO ====================
-
-  private claveEstado(usuario: string): string {
-    return `coltech_login_${usuario.toLowerCase().trim()}`;
->>>>>>> rama-secundaria
   }
 
-  private obtenerEstado(usuario: string): { intentos: number; bloqueadoHasta: number } {
-    if (!usuario) return { intentos: 0, bloqueadoHasta: 0 };
-    const raw = localStorage.getItem(this.claveEstado(usuario));
-    if (!raw) return { intentos: 0, bloqueadoHasta: 0 };
-    try {
-      const parsed = JSON.parse(raw);
-      return {
-        intentos: Number(parsed.intentos) || 0,
-        bloqueadoHasta: Number(parsed.bloqueadoHasta) || 0
-      };
-    } catch {
-      return { intentos: 0, bloqueadoHasta: 0 };
+  validarDni(): boolean {
+    if (!this.dni || this.dni.length !== 8) {
+      this.mostrarErrorRegistro('DNI inválido (8 dígitos)');
+      return false;
     }
+    return true;
   }
 
-  private guardarEstado(usuario: string, intentos: number, bloqueadoHasta: number) {
-    if (!usuario) return;
-    localStorage.setItem(
-      this.claveEstado(usuario),
-      JSON.stringify({ intentos, bloqueadoHasta })
-    );
+  validarNombres(): boolean {
+    if (!this.nombres.trim()) {
+      this.mostrarErrorRegistro('Ingresa tus nombres');
+      return false;
+    }
+    return true;
   }
 
-  private limpiarEstado(usuario: string) {
-    if (!usuario) return;
-    localStorage.removeItem(this.claveEstado(usuario));
+  validarApellidos(): boolean {
+    if (!this.apellidos.trim()) {
+      this.mostrarErrorRegistro('Ingresa tus apellidos');
+      return false;
+    }
+    return true;
   }
 
-  private estaBloqueado(usuario: string): boolean {
-    if (!usuario) return false;
-    const { bloqueadoHasta } = this.obtenerEstado(usuario);
-    return bloqueadoHasta > Date.now();
+  validarCorreo(): boolean {
+    if (!this.correo?.includes('@')) {
+      this.mostrarErrorRegistro('Correo inválido');
+      return false;
+    }
+    return true;
   }
 
-<<<<<<< HEAD
   validarTelefono(): boolean {
     if (!this.telefono || this.telefono.length !== 9) {
       this.mostrarErrorRegistro('Teléfono inválido (debe tener 9 dígitos)');
@@ -208,43 +182,18 @@ export class Login implements OnDestroy {
   }
 
   // ==================== LOGIN ====================
-=======
-  private segundosRestantes(usuario: string): number {
-    if (!usuario) return 0;
-    const { bloqueadoHasta } = this.obtenerEstado(usuario);
-    const ms = bloqueadoHasta - Date.now();
-    return ms > 0 ? Math.ceil(ms / 1000) : 0;
-  }
-
-  // ==================== INICIAR SESIÓN ====================
->>>>>>> rama-secundaria
   iniciarSesion() {
     if (!this.usuario || !this.contrasena) {
       this.mostrarErrorLogin('Ingresa usuario y contraseña');
       return;
     }
 
-<<<<<<< HEAD
     const intentosActuales = this.obtenerIntentos(this.usuario);
     if (intentosActuales >= 3) {
       this.activarBloqueoTemporal();
       return;
     }
 
-=======
-    if (this.estaBloqueado(this.usuario)) {
-      const seg = this.segundosRestantes(this.usuario);
-      this.cuentaBloqueada = true;
-      this.mostrarErrorLogin(`Cuenta bloqueada. Intenta de nuevo en ${seg}s.`);
-      return;
-    }
-
-    const estado = this.obtenerEstado(this.usuario);
-    if (estado.intentos >= this.MAX_INTENTOS) {
-      this.limpiarEstado(this.usuario);
-    }
-
->>>>>>> rama-secundaria
     this.cargando = true;
     this.errorLogin = '';
     this.cuentaBloqueada = false;
@@ -255,11 +204,7 @@ export class Login implements OnDestroy {
       contrasena: this.contrasena
     }).subscribe({
       next: (resp: any) => {
-<<<<<<< HEAD
         this.limpiarIntentos(this.usuario);
-=======
-        this.limpiarEstado(this.usuario);
->>>>>>> rama-secundaria
         this.guardarSesionYRedirigir(resp);
       },
       error: (err) => {
@@ -271,7 +216,6 @@ export class Login implements OnDestroy {
   }
 
   private guardarSesionYRedirigir(resp: any) {
-<<<<<<< HEAD
     if (!resp || resp.idPersona == null) {
       this.cargando = false;
       this.mostrarErrorLogin('Respuesta inválida del servidor');
@@ -280,10 +224,6 @@ export class Login implements OnDestroy {
 
     const usuarioData = {
       idPersona: resp.idPersona,
-=======
-    const usuarioData = {
-      idPersona: resp.idPersona || '',
->>>>>>> rama-secundaria
       nombre: resp.nombre || '',
       apellido: resp.apellido || '',
       correo: resp.correo || this.usuario,
@@ -302,7 +242,6 @@ export class Login implements OnDestroy {
   }
 
   private manejarErrorLogin(err: any) {
-<<<<<<< HEAD
     // Bloqueo enviado por backend (423) o mensaje que contiene "bloqueada"
     if (err.status === 423 || err.error?.error?.toLowerCase().includes('bloqueada')) {
       this.activarBloqueoTemporal();
@@ -320,31 +259,6 @@ export class Login implements OnDestroy {
       } else {
         this.errorLogin = `Credenciales incorrectas. Intento ${intentos} de 3.`;
         this.cdr.detectChanges();
-=======
-    if (err.status === 423 || err.error?.error?.toLowerCase().includes('bloqueada')) {
-      this.activarBloqueoConMensaje(
-        err.error?.error || 'Cuenta bloqueada temporalmente',
-        this.usuario
-      );
-      return;
-    }
-
-    if (err.status === 401 || err.status === 403) {
-      const estado = this.obtenerEstado(this.usuario);
-      const nuevosIntentos = estado.intentos + 1;
-
-      if (nuevosIntentos >= this.MAX_INTENTOS) {
-        this.guardarEstado(this.usuario, nuevosIntentos, Date.now() + this.BLOQUEO_MS);
-        this.activarBloqueoConMensaje(
-          `Demasiados intentos fallidos. Espera ${this.BLOQUEO_MS / 1000}s.`,
-          this.usuario
-        );
-      } else {
-        this.guardarEstado(this.usuario, nuevosIntentos, 0);
-        this.mostrarErrorLogin(
-          `Credenciales incorrectas. Intento ${nuevosIntentos} de ${this.MAX_INTENTOS}.`
-        );
->>>>>>> rama-secundaria
       }
       return;
     }
@@ -354,7 +268,6 @@ export class Login implements OnDestroy {
       return;
     }
 
-<<<<<<< HEAD
     // IMPORTANTE: si el backend lanza RuntimeException (500) por credenciales,
     // también deberíamos contarlo. Si tu backend NO devuelve 401, cambia esta
     // rama para incluir la lógica de conteo.
@@ -374,77 +287,6 @@ export class Login implements OnDestroy {
       this.cuentaBloqueada = false;
       this.cdr.detectChanges();
     }, 5000);
-=======
-    this.mostrarErrorLogin(err.error?.error || 'Error al iniciar sesión');
-  }
-
-  /**
-   * Bloqueo en DOS FASES:
-   *   - Fase 1 (0–1 s): mensaje fuerte "Demasiados intentos fallidos. Espera 5s."
-   *   - Fase 2 (1–5 s): mensaje persistente "Cuenta bloqueada. Intenta en Xs."
-   *   - A los 5 s: desbloquea y limpia el estado → 3 intentos nuevos.
-   */
-  private activarBloqueoConMensaje(mensaje: string, usuario: string) {
-    this.limpiarTimersBloqueo();
-
-    // Guardar el usuario bloqueado ANTES de limpiar el campo
-    this.usuarioBloqueado = (usuario || '').toLowerCase().trim();
-
-    // FASE 1: mensaje fuerte
-    this.cuentaBloqueada = true;
-    this.usuario = '';
-    this.contrasena = '';
-    this.errorLogin = mensaje;
-    this.cdr.detectChanges();
-
-    // A los 1 s: cambiar mensaje y arrancar cuenta atrás
-    this.timeoutFaseVisual = setTimeout(() => {
-      this.actualizarMensajeBloqueo();
-      this.cdr.detectChanges();
-
-      this.intervalBloqueo = setInterval(() => {
-        this.actualizarMensajeBloqueo();
-        this.cdr.detectChanges();
-      }, 1000);
-    }, this.BLOQUEO_VISUAL_MS);
-
-    // A los 5 s: desbloquear del todo y limpiar intentos
-    setTimeout(() => {
-      this.limpiarTimersBloqueo();
-      this.cuentaBloqueada = false;
-      this.errorLogin = '';
-      if (this.usuarioBloqueado) {
-        this.limpiarEstado(this.usuarioBloqueado);
-        this.usuarioBloqueado = '';
-      }
-      this.cdr.detectChanges();
-    }, this.BLOQUEO_MS);
-  }
-
-  private actualizarMensajeBloqueo() {
-    if (!this.usuarioBloqueado) return;
-    const seg = this.segundosRestantes(this.usuarioBloqueado);
-    if (seg <= 0) {
-      this.limpiarTimersBloqueo();
-      this.cuentaBloqueada = false;
-      this.errorLogin = '';
-      this.limpiarEstado(this.usuarioBloqueado);
-      this.usuarioBloqueado = '';
-      return;
-    }
-    this.errorLogin = `Cuenta bloqueada. Intenta de nuevo en ${seg}s.`;
-  }
-
-  private limpiarTimersBloqueo() {
-    if (this.intervalBloqueo) {
-      clearInterval(this.intervalBloqueo);
-      this.intervalBloqueo = null;
-    }
-    if (this.timeoutFaseVisual) {
-      clearTimeout(this.timeoutFaseVisual);
-      this.timeoutFaseVisual = null;
-    }
->>>>>>> rama-secundaria
   }
 
   private redirigirPorRol(rol: string) {
@@ -464,11 +306,7 @@ export class Login implements OnDestroy {
     }
   }
 
-<<<<<<< HEAD
   // ==================== OLVIDO DE CONTRASEÑA ====================
-=======
-  // ==================== OLVIDO CONTRASEÑA ====================
->>>>>>> rama-secundaria
   abrirOlvido() {
     if (this.timeoutErrorLogin) clearTimeout(this.timeoutErrorLogin);
     if (this.timeoutErrorRegistro) clearTimeout(this.timeoutErrorRegistro);
@@ -601,32 +439,17 @@ export class Login implements OnDestroy {
     input.value = valor;
   }
 
-  // ==================== REGISTRAR ====================
-  private validarFormularioRegistro(): string | null {
-    if (!this.dni || this.dni.length !== 8) return 'DNI inválido (8 dígitos)';
-    if (!this.nombres.trim()) return 'Ingresa tus nombres';
-    if (!this.apellidos.trim()) return 'Ingresa tus apellidos';
-    if (!this.fechaNacimiento) return 'Debes ingresar tu fecha de nacimiento';
-    if (!this.correo?.includes('@')) return 'Correo inválido';
-
-    if (!this.telefono || this.telefono.length !== 9 || !/^\d{9}$/.test(this.telefono)) {
-      return 'Teléfono inválido (debe tener 9 dígitos)';
-    }
-
-    if (this.contrasenaRegistro.length < 6) return 'Contraseña muy corta (mín 6)';
-    if (this.contrasenaRegistro !== this.confirmarContrasena) return 'Las contraseñas no coinciden';
-
-    return null;
-  }
-
   registrarUsuario() {
     this.errorRegistro = '';
 
-    const errorValidacion = this.validarFormularioRegistro();
-    if (errorValidacion) {
-      this.mostrarErrorRegistro(errorValidacion);
-      return;
-    }
+    if (!this.validarDni()) return;
+    if (!this.validarNombres()) return;
+    if (!this.validarApellidos()) return;
+    if (!this.validarCorreo()) return;
+    if (!this.validarTelefono()) return;
+    if (!this.validarFechaNacimiento()) return;
+    if (!this.validarContrasena()) return;
+    if (!this.validarConfirmacion()) return;
 
     this.registrando = true;
     this.cdr.detectChanges();
@@ -642,11 +465,7 @@ export class Login implements OnDestroy {
     };
 
     this.http.post(`${this.apiUrl}/auth/register`, body).subscribe({
-<<<<<<< HEAD
       next: () => {
-=======
-      next: (resp: any) => {
->>>>>>> rama-secundaria
         this.registrando = false;
         this.cerrarRegistro();
         this.cuentaCreada = true;
