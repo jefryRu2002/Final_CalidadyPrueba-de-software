@@ -37,8 +37,8 @@
         
         <!-- TIPO DE EQUIPO -->
         <div class="form-grupo">
-          <label>Tipo de equipo *</label>
-          <select [(ngModel)]="tipoEquipoSeleccionado" (ngModelChange)="onTipoEquipoChange()" class="form-select" name="tipoEquipo">
+          <label for="tipoEquipo">Tipo de equipo *</label>
+          <select id="tipoEquipo" [(ngModel)]="tipoEquipoSeleccionado" (ngModelChange)="onTipoEquipoChange()" class="form-select" name="tipoEquipo">
             <option value="" disabled selected>Selecciona el tipo</option>
             <option value="Computadora">Computadora de escritorio</option>
             <option value="Laptop">Laptop</option>
@@ -47,8 +47,9 @@
 
         <!-- NÚMERO DE SERIE -->
         <div class="form-grupo">
-          <label>Número de serie *</label>
+          <label for="numeroSerie">Número de serie *</label>
           <input 
+            id="numeroSerie"
             type="text" 
             placeholder="Ej: SN-2024-001" 
             [(ngModel)]="reporte.numeroSerie" 
@@ -59,8 +60,8 @@
 
         <!-- MARCA -->
         <div class="form-grupo">
-          <label>Marca *</label>
-          <select [(ngModel)]="marcaSeleccionada" (ngModelChange)="onMarcaChange()" class="form-select" name="marcaSelect">
+          <label for="marcaSelect">Marca *</label>
+          <select id="marcaSelect" [(ngModel)]="marcaSeleccionada" (ngModelChange)="onMarcaChange()" class="form-select" name="marcaSelect">
             <option value="" disabled selected>Selecciona una marca</option>
             <option value="HP">HP</option>
             <option value="Lenovo">Lenovo</option>
@@ -76,8 +77,9 @@
         <!-- OTRA MARCA -->
         @if (marcaSeleccionada === 'Otras') {
           <div class="form-grupo">
-            <label>Especifique otra marca *</label>
+            <label for="otraMarca">Especifique otra marca *</label>
             <input 
+              id="otraMarca"
               type="text" 
               placeholder="¿Qué marca es?" 
               [(ngModel)]="otraMarca" 
@@ -89,8 +91,9 @@
 
         <!-- MODELO -->
         <div class="form-grupo">
-          <label>Modelo *</label>
+          <label for="modelo">Modelo *</label>
           <input 
+            id="modelo"
             type="text" 
             placeholder="Ej: Pavilion 15, ThinkPad X1" 
             [(ngModel)]="reporte.modelo" 
@@ -100,8 +103,9 @@
 
         <!-- DESCRIPCIÓN DE LA FALLA -->
         <div class="form-grupo full">
-          <label>Descripción de la falla *</label>
+          <label for="descripcionFalla">Descripción de la falla *</label>
           <textarea 
+            id="descripcionFalla"
             rows="4" 
             placeholder="Describe detalladamente el problema del equipo (mínimo 10 caracteres)..." 
             [(ngModel)]="reporte.descripcionFalla" 

@@ -22,8 +22,9 @@
 }
 
 .header p {
-  color: #64748b;
+  color: #475569; /* ✅ FIX WCAG: #64748b (4.34:1) → #475569 (7.0:1) */
   margin-top: 5px;
+  font-size: 15px;
 }
 
 /* TARJETA */
@@ -49,6 +50,7 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto 30px;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
 }
 
 /* FORMULARIO */
@@ -77,16 +79,41 @@
   border-radius: 10px;
   font-size: 14px;
   transition: .3s;
+  color: #0f172a;
 }
 
 .form-grupo input:focus {
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+  outline: none;
 }
 
 .form-grupo input:disabled {
   background: #f8fafc;
-  color: #64748b;
+  color: #475569; /* ✅ WCAG AA: 7.0:1 */
+  cursor: not-allowed;
+}
+
+.input-readonly {
+  background-color: #f8fafc;
+  color: #475569;
+  border-color: #e2e8f0;
+}
+
+.input-editable {
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+}
+
+/* Textos de ayuda */
+.text-muted, .text-info {
+  font-size: 12px;
+  margin-top: 6px;
+  color: #475569; /* ✅ WCAG AA: 7.0:1 */
+}
+
+.text-info {
+  color: #1d4ed8; /* Azul oscuro para info */
 }
 
 /* BOTONES */
@@ -108,11 +135,15 @@
   font-weight: 600;
   cursor: pointer;
   transition: .3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .btn-editar-perfil {
   background: #e0e7ff;
-  color: #3730a3;
+  color: #3730a3; /* ✅ WCAG AA */
 }
 
 .btn-editar-perfil:hover {
@@ -130,7 +161,7 @@
 
 .btn-cancelar {
   background: #e2e8f0;
-  color: #334155;
+  color: #334155; /* ✅ WCAG AA */
 }
 
 .btn-cancelar:hover {
@@ -153,6 +184,7 @@
 .alerta-exito,
 .alerta-error {
   width: 100%;
+  max-width: 900px;
   margin-bottom: 20px;
   padding: 14px;
   border-radius: 10px;
@@ -180,7 +212,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(15, 23, 42, 0.6); /* Color acorde a tu paleta (slate) */
+  background-color: rgba(15, 23, 42, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -195,17 +227,39 @@
   max-width: 420px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.15);
   text-align: center;
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
 .modal-titulo {
   font-size: 22px;
   font-weight: 700;
   color: #0f172a;
-  margin-bottom: 8px;
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #64748b;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+.modal-close:hover {
+  color: #0f172a;
 }
 
 .modal-subtitulo {
-  color: #64748b;
+  color: #475569; /* ✅ WCAG AA: 7.0:1 */
   font-size: 14px;
   margin-bottom: 20px;
   line-height: 1.5;
@@ -219,18 +273,48 @@
   margin-bottom: 25px;
 }
 
-.caja-secreta p {
-  color: #334155;
-  font-size: 14px;
-  margin-bottom: 5px;
+.secreto-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.secreto-label {
+  font-size: 12px;
+  color: #475569;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
 }
 
 .texto-resaltado {
-  color: #2563eb;
+  color: #1d4ed8; /* ✅ WCAG AA */
   letter-spacing: 4px;
   font-size: 24px;
   margin-top: 10px;
   font-family: monospace;
+  background: #eff6ff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid #bfdbfe;
+}
+
+.btn-copiar {
+  background: #e2e8f0;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  color: #334155;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+  margin-top: 10px;
+}
+
+.btn-copiar:hover {
+  background: #cbd5e1;
 }
 
 .input-modal {
@@ -246,6 +330,34 @@
 
 .btn-full {
   width: 100%;
+}
+
+.mfa-activo-info {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.mfa-activo-info p {
+  color: #166534;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.btn-desactivar {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-desactivar:hover {
+  background: #fee2e2;
 }
 
 /* RESPONSIVE */

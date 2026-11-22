@@ -5,9 +5,19 @@
             <p>Gestiona el pago de tus servicios de reparación</p>
         </div>
         <div class="pestanas">
-            <button [class.activo]="pestanaActiva === 'pendientes'" (click)="cambiarPestana('pendientes')">📋 Pendientes</button>
-            <button [class.activo]="pestanaActiva === 'historial'" (click)="cambiarPestana('historial')">📜 Historial</button>
-        </div>
+    <button 
+        [class.activo]="pestanaActiva === 'pendientes'" 
+        (click)="pestanaActiva = 'pendientes'"
+        aria-label="Pestaña de pagos pendientes">
+        📋 Pendientes
+    </button>
+    <button 
+        [class.activo]="pestanaActiva === 'historial'" 
+        (click)="pestanaActiva = 'historial'"
+        aria-label="Pestaña de historial de pagos">
+        📜 Historial
+    </button>
+</div>
     </div>
 
     @if (pagosPendientes.length > 0 && pestanaActiva === 'pendientes') {
@@ -121,11 +131,10 @@
                         <h4>📱 Escanea con {{ datosBilletera.tipo === 'yape' ? 'Yape' : 'Plin' }}</h4>
                         
                         <div class="qr-container">
-                            <!-- NOTA: Asegúrate de tener estas imágenes dentro de src/assets/imagenes/ -->
                             @if (datosBilletera.tipo === 'yape') {
-                                <img src="assets/imagenes/qr-yape.png" alt="QR Yape" class="qr-imagen">
+                                <img src="assets/imagenes/qr-yape.png" alt="Código QR para pagar con Yape" class="qr-imagen">
                             } @else {
-                                <img src="assets/imagenes/qr-plin.png" alt="QR Plin" class="qr-imagen">
+                                <img src="assets/imagenes/qr-plin.png" alt="Código QR para pagar con Plin" class="qr-imagen">
                             }
                         </div>
                         

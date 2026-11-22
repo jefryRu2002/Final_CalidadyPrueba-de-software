@@ -18,8 +18,12 @@
 
     @if (!cargando && ordenes.length > 0) {
         <div class="filtros">
-            <input type="text" [(ngModel)]="busqueda" placeholder="🔍 Buscar por ticket, cliente, equipo...">
-            <select [(ngModel)]="filtroEstado">
+            <input 
+                type="text" 
+                [(ngModel)]="busqueda" 
+                placeholder="🔍 Buscar por ticket, cliente, equipo..."
+                aria-label="Buscar órdenes por ticket, cliente o equipo">
+            <select [(ngModel)]="filtroEstado" aria-label="Filtrar por estado de la orden">
                 <option value="TODOS">📋 Todos</option>
                 <option value="ASIGNADO">👤 Asignado</option>
                 <option value="EN_PROCESO">🔍 En diagnóstico</option>

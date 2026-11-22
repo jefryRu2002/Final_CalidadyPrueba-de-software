@@ -1,23 +1,34 @@
+/* ============================================================
+   CLIENTE - NOTIFICACIONES
+   ============================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 .notif-page {
     width: 100%;
     padding: 24px;
     background: #f8fafc;
     min-height: 100vh;
+    font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
+/* 1. HEADER */
 .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding-bottom: 20px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e2e8f0;
     margin-bottom: 24px;
     flex-wrap: wrap;
     gap: 12px;
 }
 
 .header h1 {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
     color: #0f172a;
     margin: 0;
@@ -25,7 +36,7 @@
 
 .header p {
     font-size: 13px;
-    color: #64748b;
+    color: #475569; /* ✅ WCAG AA: 7.0:1 */
     margin-top: 4px;
 }
 
@@ -36,32 +47,34 @@
 
 .btn-leer-todo {
     background: #eff6ff;
-    color: #2563eb;
+    color: #1d4ed8; /* ✅ WCAG AA: 6.3:1 */
     border: none;
     padding: 9px 16px;
     border-radius: 10px;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
+    transition: background 0.2s;
 }
 
 .btn-leer-todo:hover {
     background: #dbeafe;
 }
 
+/* 2. LOADING Y ERROR */
 .loading {
     text-align: center;
     padding: 60px;
     background: white;
     border-radius: 12px;
-    color: #64748b;
+    color: #475569; /* ✅ WCAG AA */
 }
 
 .spinner {
     display: inline-block;
     width: 32px;
     height: 32px;
-    border: 3px solid #e5e7eb;
+    border: 3px solid #e2e8f0;
     border-top: 3px solid #2563eb;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -75,38 +88,70 @@
 
 .alerta-error {
     background: #fef2f2;
-    color: #dc2626;
+    color: #b91c1c; /* ✅ WCAG AA: 6.1:1 */
     padding: 12px 16px;
     border-radius: 10px;
     margin-bottom: 16px;
     font-size: 14px;
+    font-weight: 500;
 }
 
+/* ============================================================
+   3. ESTADO VACÍO - DISEÑO PREMIUM
+   ============================================================ */
 .empty {
-    text-align: center;
-    padding: 60px;
-    color: #94a3b8;
-    background: white;
-    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 2px dashed #cbd5e1;
+    transition: all 0.3s ease;
 }
 
-.empty-icono {
-    font-size: 48px;
-    display: block;
-    margin-bottom: 16px;
+.empty:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
 }
 
-.empty p {
+.empty-icon-wrapper {
+    background: #e0e7ff;
+    color: #4f46e5;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+}
+
+.empty-svg {
+    width: 36px;
+    height: 36px;
+}
+
+.empty-titulo {
+    color: #0f172a;
+    font-size: 18px;
+    font-weight: 700;
     margin: 0 0 8px 0;
-    font-size: 15px;
-    color: #64748b;
+    letter-spacing: -0.3px;
 }
 
-.empty small {
-    font-size: 13px;
-    color: #94a3b8;
+.empty-sub {
+    color: #475569; /* ✅ WCAG AA: 7.0:1 */
+    font-size: 14px;
+    margin: 0;
+    max-width: 380px;
+    line-height: 1.6;
+    text-align: center;
 }
 
+/* 4. LISTA DE NOTIFICACIONES */
 .notif-lista {
     display: flex;
     flex-direction: column;
@@ -115,7 +160,7 @@
 
 .notif-item {
     background: white;
-    border: 0.5px solid #e5e7eb;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 16px 20px;
     display: flex;
@@ -166,14 +211,15 @@
 
 .notif-mensaje {
     font-size: 13px;
-    color: #475569;
+    color: #334155; /* ✅ WCAG AA: 9.3:1 */
     margin-bottom: 6px;
     line-height: 1.5;
 }
 
 .notif-fecha {
     font-size: 12px;
-    color: #94a3b8;
+    color: #475569; /* ✅ WCAG AA: 7.0:1 */
+    font-weight: 500;
 }
 
 .btn-eliminar {
@@ -199,9 +245,10 @@
 }
 
 .notif-item.tipo-entrega {
-    border-left-color: #10b981;
+    border-left-color: #047857; /* ✅ WCAG AA */
 }
 
+/* 5. RESPONSIVE */
 @media (max-width: 640px) {
     .notif-page {
         padding: 16px;

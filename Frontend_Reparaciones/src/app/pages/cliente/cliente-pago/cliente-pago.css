@@ -1,89 +1,616 @@
+/* ============================================================
+   CLIENTE - PAGOS
+   ============================================================ */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-.pagos-page { width: 100%; padding: 24px; background: #f8fafc; min-height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; }
 
-.header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px; margin-bottom: 24px; border-bottom: 2px solid #e5e7eb; }
-.header h1 { font-size: 24px; font-weight: 700; color: #0f172a; }
-.header p { font-size: 13px; color: #64748b; margin-top: 4px; }
+.pagos-page {
+    padding: 24px;
+    min-height: 100vh;
+    background: #f8fafc;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+}
 
-.pestanas { display: flex; gap: 4px; background: #f1f5f9; padding: 4px; border-radius: 12px; }
-.pestanas button { padding: 10px 20px; border: none; border-radius: 10px; background: transparent; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; }
-.pestanas button.activo { background: #fff; color: #1e293b; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+/* 1. HEADER */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
 
-.resumen-card { display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; margin-bottom: 24px; }
-.resumen-card strong { font-size: 24px; font-weight: 700; color: #0f172a; }
+.header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
 
-.loading { text-align: center; padding: 60px; color: #64748b; }
-.alerta-error { padding: 12px 16px; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 10px; margin-bottom: 16px; }
-.alerta-exito { padding: 12px 16px; background: #f0fdf4; color: #065f46; border: 1px solid #bbf7d0; border-radius: 10px; margin-bottom: 16px; }
+.header p {
+    font-size: 13px;
+    color: #475569; /* ✅ WCAG AA: 7:1 */
+}
 
-.pagos-lista { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
-.pago-item { display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 18px 22px; cursor: pointer; transition: all 0.2s; border-left: 4px solid #f59e0b; }
-.pago-item:hover { background: #f8fafc; transform: translateX(4px); }
-.pago-item.pagado { opacity: 0.6; cursor: default; border-left-color: #10b981; }
-.pago-info { display: flex; align-items: center; gap: 14px; flex: 1; }
-.pago-info p { font-size: 14px; color: #1e293b; font-weight: 500; }
-.pago-info small { color: #94a3b8; font-size: 12px; }
-.pago-derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-.pago-derecha strong { font-size: 18px; font-weight: 700; color: #0f172a; }
+/* Pestañas */
+.pestanas {
+    display: flex;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 10px;
+    gap: 4px;
+}
 
-.ticket-badge { background: #f1f5f9; color: #475569; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 8px; font-family: monospace; white-space: nowrap; }
-.estado { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-.estado.pendiente { background: #fef3c7; color: #92400e; }
-.estado.terminado { background: #d1fae5; color: #065f46; }
-.vacio { text-align: center; padding: 60px; color: #94a3b8; font-size: 15px; }
+.pestanas button {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569; /* ✅ FIX WCAG: #64748b (4.34:1) → #475569 (7.0:1) */
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
 
-.modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-.modal { background: #fff; border-radius: 20px; padding: 28px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.25); animation: modalIn 0.3s; }
-@keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-.modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 2px solid #f1f5f9; margin-bottom: 16px; }
-.modal-header h2 { font-size: 18px; font-weight: 700; color: #0f172a; }
-.btn-cerrar { background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; font-size: 16px; }
-.btn-cerrar:hover { background: #fee2e2; color: #dc2626; }
-.monto-modal { font-size: 32px; font-weight: 800; color: #0f172a; text-align: center; padding: 8px 0; }
+.pestanas button:hover {
+    color: #1e293b;
+}
 
-.metodos { display: flex; gap: 8px; padding: 4px; background: #f1f5f9; border-radius: 14px; margin-bottom: 16px; }
-.metodos button { flex: 1; padding: 12px 8px; border: none; border-radius: 12px; background: transparent; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; }
-.metodos button.activo { background: #fff; color: #1e293b; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.pestanas button.activo {
+    background: #ffffff;
+    color: #2563eb;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
 
-.form-pago { display: flex; flex-direction: column; gap: 12px; }
-.form-pago input, .form-pago select { width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; outline: none; }
-.form-pago input:focus, .form-pago select:focus { border-color: #3b82f6; }
-.form-pago label { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: -8px; }
+/* 2. RESUMEN */
+.resumen-card {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-.billeteras { display: flex; gap: 8px; padding: 4px; background: #f1f5f9; border-radius: 12px; }
-.billeteras button { flex: 1; padding: 12px; border: none; border-radius: 10px; background: transparent; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; }
-.billeteras button.activo { background: #fff; color: #1e293b; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.resumen-card span {
+    font-size: 14px;
+    color: #1e40af; /* ✅ WCAG AA: 7.5:1 */
+    font-weight: 600;
+}
 
-.btn-ver-qr { width: 100%; padding: 14px; background: #8b5cf6; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
-.btn-ver-qr:hover { background: #7c3aed; }
+.resumen-card strong {
+    font-size: 20px;
+    color: #1e3a8a; /* ✅ WCAG AA: 10:1 */
+}
 
-.qr-section { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 10px 0; }
-.qr-section h4 { font-size: 15px; color: #374151; }
-.qr-container { background: #fff; padding: 20px; border-radius: 16px; border: 2px solid #e2e8f0; }
-.qr-imagen { width: 200px; height: 200px; }
-.qr-monto { font-size: 16px; color: #475569; }
-.qr-monto strong { color: #059669; font-size: 20px; }
+/* 3. LOADING & ALERTAS */
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #475569; /* ✅ WCAG AA */
+    background: #fff;
+    border-radius: 12px;
+}
 
-.datos-transferencia { background: #f8fafc; padding: 16px; border-radius: 10px; border: 1px solid #e2e8f0; }
-.datos-transferencia h4 { margin-bottom: 10px; font-size: 14px; }
-.banco-info p { font-size: 13px; color: #475569; margin: 4px 0; }
+.alerta-error {
+    background: #fef2f2;
+    color: #b91c1c; /* ✅ WCAG AA: 6:1 */
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    border: 1px solid #fecaca;
+    font-size: 14px;
+    font-weight: 500;
+}
 
-.btn-pagar { width: 100%; padding: 16px; background: #2563eb; color: #fff; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px; }
-.btn-pagar:hover { background: #1d4ed8; }
-.btn-pagar:disabled { background: #94a3b8; cursor: not-allowed; }
-.seguridad { text-align: center; font-size: 12px; color: #94a3b8; margin-top: 4px; }
+.alerta-exito {
+    background: #f0fdf4;
+    color: #065f46; /* ✅ WCAG AA: 8:1 */
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    border: 1px solid #bbf7d0;
+    font-size: 14px;
+    font-weight: 500;
+}
 
-.izipay-embebido { margin-bottom: 16px; }
-.izipay-titulo { text-align: center; padding: 14px; background: #f0f9ff; border-radius: 12px 12px 0 0; color: #0c4a6e; font-weight: 600; border: 1px solid #bae6fd; }
-.izipay-info { text-align: center; font-size: 12px; color: #64748b; margin: 8px 0; }
-.izipay-container { min-height: 350px; border: 1px solid #bae6fd; border-radius: 0 0 12px 12px; background: #fff; }
-.btn-volver { width: 100%; padding: 12px; margin-top: 12px; background: #fff; color: #475569; border: 1px solid #e2e8f0; border-radius: 10px; cursor: pointer; font-weight: 600; }
+/* 4. LISTA DE PAGOS */
+.pagos-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
 
-.file-label { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 10px; cursor: pointer; font-size: 13px; color: #64748b; }
-.file-label:hover { background: #f0f9ff; border-color: #7dd3fc; }
-.file-name { padding: 6px 10px; background: #f0fdf4; color: #16a34a; border-radius: 6px; font-size: 12px; margin-top: 4px; }
+.pago-item {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
 
-.toast-exito { position: fixed; bottom: 24px; right: 24px; background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; border-radius: 14px; padding: 16px 24px; font-size: 14px; font-weight: 600; z-index: 1001; cursor: pointer; box-shadow: 0 10px 30px rgba(16,185,129,0.3); animation: slideIn 0.4s; }
-@keyframes slideIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+.pago-item:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
 
-@media (max-width: 768px) { .pagos-page { padding: 16px; } .header { flex-direction: column; gap: 12px; } .pestanas { width: 100%; } .pestanas button { flex: 1; } .modal { margin: 16px; padding: 20px; } .monto-modal { font-size: 26px; } .metodos { flex-direction: column; } }
+.pago-item.pagado {
+    cursor: default;
+    opacity: 0.8;
+    background: #f8fafc;
+}
+
+.pago-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.ticket-badge {
+    background: #f1f5f9;
+    color: #1e293b;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: monospace;
+}
+
+.pago-info p {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 2px;
+}
+
+.pago-info small {
+    font-size: 12px;
+    color: #475569; /* ✅ WCAG AA */
+}
+
+.pago-derecha {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.pago-derecha strong {
+    font-size: 16px;
+    color: #0f172a;
+}
+
+/* Badges de estado */
+.estado {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.estado.pendiente {
+    background: #fef3c7;
+    color: #92400e; /* ✅ WCAG AA */
+}
+
+.estado.terminado {
+    background: #d1fae5;
+    color: #065f46; /* ✅ WCAG AA */
+}
+
+/* 5. VACÍO */
+.vacio {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 2px dashed #cbd5e1;
+    color: #475569; /* ✅ WCAG AA */
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/* 6. MODAL BASE */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modal {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    color: #0f172a;
+    margin: 0;
+}
+
+.btn-cerrar {
+    background: #f1f5f9;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: #475569; /* ✅ WCAG AA */
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-cerrar:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.monto-modal {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 800;
+    color: #0f172a;
+    padding: 20px 0;
+    background: #f8fafc;
+    margin: 0;
+}
+
+/* 7. SELECTOR DE MÉTODOS */
+.metodos {
+    display: flex;
+    gap: 12px;
+    padding: 20px 24px;
+}
+
+.metodos button {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    background: #fff;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569; /* ✅ WCAG AA */
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.metodos button:hover {
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+
+.metodos button.activo {
+    border-color: #2563eb;
+    background: #eff6ff;
+    color: #1d4ed8; /* ✅ WCAG AA */
+}
+
+/* 8. FORMULARIO DE PAGO */
+.form-pago {
+    padding: 0 24px 24px;
+}
+
+.form-pago label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: #374151; /* ✅ WCAG AA */
+    margin-bottom: 6px;
+    margin-top: 16px;
+}
+
+.form-pago input, .form-pago select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #1e293b;
+    transition: all 0.2s;
+}
+
+.form-pago input:focus, .form-pago select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+/* Datos de transferencia */
+.datos-transferencia {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.datos-transferencia h4 {
+    font-size: 14px;
+    color: #0f172a;
+    margin-bottom: 10px;
+}
+
+.banco-info p {
+    font-size: 13px;
+    color: #475569; /* ✅ WCAG AA */
+    margin-bottom: 4px;
+}
+
+.banco-info strong {
+    color: #1e293b;
+}
+
+/* File upload label */
+.file-label {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px;
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: 10px;
+    color: #475569; /* ✅ WCAG AA */
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 16px !important;
+}
+
+.file-label:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #1e293b;
+}
+
+.file-name {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #047857; /* ✅ WCAG AA */
+    font-weight: 600;
+}
+
+/* Billeteras */
+.billeteras {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.billeteras button {
+    flex: 1;
+    padding: 12px;
+    background: #fff;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569; /* ✅ WCAG AA */
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.billeteras button.activo {
+    border-color: #2563eb;
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+/* Botón Ver QR */
+.btn-ver-qr {
+    width: 100%;
+    padding: 12px;
+    background: #fff;
+    border: 2px solid #2563eb;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d4ed8;
+    cursor: pointer;
+    margin-bottom: 16px;
+    transition: all 0.2s;
+}
+
+.btn-ver-qr:hover {
+    background: #eff6ff;
+}
+
+/* Botón Pagar */
+.btn-pagar {
+    width: 100%;
+    padding: 16px;
+    background: #2563eb;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.2s;
+}
+
+.btn-pagar:hover:not(:disabled) {
+    background: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.btn-pagar:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* 9. QR SECTION */
+.qr-section {
+    padding: 0 24px 24px;
+}
+
+.btn-volver {
+    background: none;
+    border: none;
+    color: #475569; /* ✅ WCAG AA */
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-volver:hover {
+    color: #1e293b;
+}
+
+.qr-section h4 {
+    font-size: 16px;
+    color: #0f172a;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.qr-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.qr-imagen {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    padding: 8px;
+    background: #fff;
+}
+
+.qr-monto {
+    text-align: center;
+    font-size: 14px;
+    color: #475569; /* ✅ WCAG AA */
+    margin-bottom: 20px;
+}
+
+.qr-monto strong {
+    font-size: 18px;
+    color: #0f172a;
+}
+
+.qr-instrucciones {
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+}
+
+.qr-instrucciones p {
+    font-size: 13px;
+    color: #475569; /* ✅ WCAG AA */
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.qr-instrucciones p:last-child {
+    margin-bottom: 0;
+}
+
+/* 10. TOAST */
+.toast-exito {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #047857;
+    color: #fff;
+    padding: 14px 28px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    z-index: 2000;
+    animation: slideUpToast 0.3s ease;
+}
+
+@keyframes slideUpToast {
+    from { opacity: 0; transform: translate(-50%, 20px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* 11. RESPONSIVE */
+@media (max-width: 768px) {
+    .pagos-page {
+        padding: 16px;
+    }
+    .pago-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .pago-derecha {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
+    .modal {
+        border-radius: 16px 16px 0 0;
+        max-height: 95vh;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        animation: slideUpMobile 0.3s ease;
+    }
+    @keyframes slideUpMobile {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+}

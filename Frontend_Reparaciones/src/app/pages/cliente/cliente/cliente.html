@@ -36,29 +36,30 @@
 
         <!-- NOMBRE -->
         <div class="form-grupo">
-          <label>Nombre</label>
-          <input type="text" [value]="perfil.nombre" disabled class="input-readonly">
+          <label for="perfilNombre">Nombre</label>
+          <input id="perfilNombre" type="text" [value]="perfil.nombre" disabled class="input-readonly">
           <small class="text-muted">No editable</small>
         </div>
 
         <!-- APELLIDO -->
         <div class="form-grupo">
-          <label>Apellido</label>
-          <input type="text" [value]="perfil.apellido" disabled class="input-readonly">
+          <label for="perfilApellido">Apellido</label>
+          <input id="perfilApellido" type="text" [value]="perfil.apellido" disabled class="input-readonly">
           <small class="text-muted">No editable</small>
         </div>
 
         <!-- DNI -->
         <div class="form-grupo">
-          <label>DNI</label>
-          <input type="text" [value]="perfil.dni" disabled class="input-readonly">
+          <label for="perfilDni">DNI</label>
+          <input id="perfilDni" type="text" [value]="perfil.dni" disabled class="input-readonly">
           <small class="text-muted">No editable</small>
         </div>
 
         <!-- TELÉFONO -->
         <div class="form-grupo">
-          <label>Teléfono *</label>
+          <label for="perfilTelefono">Teléfono *</label>
           <input
+            id="perfilTelefono"
             type="tel"
             [(ngModel)]="perfil.telefono"
             [disabled]="!editando"
@@ -75,8 +76,9 @@
 
         <!-- CORREO -->
         <div class="form-grupo">
-          <label>Correo electrónico *</label>
+          <label for="perfilCorreo">Correo electrónico *</label>
           <input
+            id="perfilCorreo"
             type="email"
             [(ngModel)]="perfil.correo"
             [disabled]="!editando"
@@ -147,9 +149,16 @@
         </div>
 
         <div class="form-grupo input-modal">
-          <label>Código de verificación (6 dígitos):</label>
-          <input type="text" placeholder="123456" [(ngModel)]="codigoVerificacion" maxlength="6"
-            (input)="validarCodigoVerificacion()" name="codigoMFA" autocomplete="off">
+          <label for="codigoMFA">Código de verificación (6 dígitos):</label>
+          <input 
+            id="codigoMFA"
+            type="text" 
+            placeholder="123456" 
+            [(ngModel)]="codigoVerificacion" 
+            maxlength="6"
+            (input)="validarCodigoVerificacion()" 
+            name="codigoMFA" 
+            autocomplete="off">
           <small class="text-info">Ingresa el código que aparece en tu aplicación</small>
         </div>
       </div>

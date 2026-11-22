@@ -81,7 +81,7 @@
                 <div class="seccion">
                     <h3>🛠️ Trabajos Realizados</h3>
                     <div class="add-row">
-                        <input [(ngModel)]="nuevoTrabajo" 
+                        <input aria-label="Nuevo trabajo" [(ngModel)]="nuevoTrabajo" 
                                placeholder="Ej: Cambio de pantalla..."
                                (keyup.enter)="agregarTrabajo()">
                         <button class="btn-add" (click)="agregarTrabajo()">+</button>
@@ -142,7 +142,7 @@
                 <!-- Sección: Notas -->
                 <div class="seccion">
                     <h3>📝 Notas</h3>
-                    <textarea [(ngModel)]="ordenSeleccionada.notas" 
+                    <textarea aria-label="Notas de reparación" [(ngModel)]="ordenSeleccionada.notas" 
                               rows="2" 
                               placeholder="Observaciones..."></textarea>
                 </div>
@@ -175,19 +175,19 @@
             </div>
             <div class="modal-body">
                 <div class="form-grupo">
-                    <label>Nombre</label>
-                    <input type="text" [(ngModel)]="nuevoRepuesto.nombre" 
+                    <label for="repNombre">Nombre</label>
+                    <input id="repNombre" type="text" [(ngModel)]="nuevoRepuesto.nombre" 
                            placeholder="Ej: Pantalla LCD">
                 </div>
                 <div class="form-fila">
                     <div class="form-grupo">
-                        <label>Cantidad</label>
-                        <input type="number" [(ngModel)]="nuevoRepuesto.cantidad" 
+                        <label for="repCantidad">Cantidad</label>
+                        <input id="repCantidad" type="number" [(ngModel)]="nuevoRepuesto.cantidad" 
                                min="1" placeholder="1">
                     </div>
                     <div class="form-grupo">
-                        <label>Precio (S/)</label>
-                        <input type="number" [(ngModel)]="nuevoRepuesto.precio" 
+                        <label for="repPrecio">Precio (S/)</label>
+                        <input id="repPrecio" type="number" [(ngModel)]="nuevoRepuesto.precio" 
                                min="0" step="0.01" placeholder="0.00">
                     </div>
                 </div>

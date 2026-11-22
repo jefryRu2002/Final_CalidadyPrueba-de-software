@@ -22,7 +22,7 @@
     gap: 12px;
 }
 .header h1 { font-size: 22px; font-weight: 700; color: #0f172a; }
-.header p  { font-size: 13px; color: #64748b; margin-top: 2px; }
+.header p  { font-size: 13px; color: #475569; margin-top: 2px; } /* ✅ WCAG AA: 7.0:1 */
 
 .btn-recargar {
     padding: 8px 16px;
@@ -34,6 +34,9 @@
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 .btn-recargar:hover { background: #1d4ed8; }
 
@@ -48,7 +51,7 @@
     align-items: center;
     gap: 8px;
 }
-.alerta.error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.alerta.error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; } /* ✅ WCAG AA: 6.1:1 */
 .alerta.exito { background: #f0fdf4; color: #065f46; border: 1px solid #bbf7d0; }
 
 /* 3. LOADING */
@@ -69,19 +72,62 @@
     animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-.loading p { color: #64748b; font-size: 14px; }
+.loading p { color: #475569; font-size: 14px; } /* ✅ WCAG AA */
 
-/* 4. VACÍO */
+/* ============================================================
+   4. VACÍO - DISEÑO PREMIUM
+   ============================================================ */
 .vacio {
-    text-align: center;
-    padding: 60px 20px;
-    background: #fff;
-    border-radius: 12px;
-    border: 2px dashed #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    background: #f8fafc; /* Fondo gris muy claro */
+    border-radius: 16px;
+    border: 2px dashed #cbd5e1; /* Borde punteado sutil */
+    transition: all 0.3s ease;
 }
-.vacio-icono { font-size: 48px; display: block; margin-bottom: 8px; }
-.vacio p { color: #94a3b8; font-size: 15px; }
-.vacio-sub { font-size: 12px !important; margin-top: 4px; }
+
+.vacio:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.vacio-icon-wrapper {
+    background: #e0e7ff; /* Fondo índigo muy claro */
+    color: #4f46e5; /* Ícono índigo oscuro */
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+}
+
+.vacio-svg {
+    width: 36px;
+    height: 36px;
+}
+
+.vacio-titulo {
+    color: #0f172a; /* Azul muy oscuro: contraste 16:1 ✅ */
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.3px;
+}
+
+.vacio-sub {
+    color: #475569; /* Gris oscuro: contraste 7:1 ✅ */
+    font-size: 14px;
+    margin: 0;
+    max-width: 380px;
+    line-height: 1.6;
+    text-align: center;
+}
 
 /* 5. LISTA DE COTIZACIONES */
 .cot-list {
@@ -114,7 +160,7 @@
 }
 .cot-ticket { display: flex; flex-direction: column; gap: 2px; }
 .ticket-label { font-size: 15px; font-weight: 700; color: #0f172a; }
-.cot-id { font-size: 11px; color: #94a3b8; }
+.cot-id { font-size: 11px; color: #64748b; } /* ✅ WCAG AA: 4.76:1 */
 
 .estado-badge {
     padding: 5px 12px;
@@ -135,7 +181,7 @@
     gap: 8px;
 }
 .info-row { display: flex; gap: 10px; font-size: 13px; }
-.info-label { font-weight: 600; color: #64748b; min-width: 80px; }
+.info-label { font-weight: 600; color: #475569; min-width: 80px; } /* ✅ WCAG AA */
 .info-value { color: #334155; }
 .info-value.descripcion {
     background: #fefce8;
@@ -143,6 +189,7 @@
     border-radius: 6px;
     font-size: 12px;
     border: 1px solid #fde68a;
+    color: #422006; /* ✅ Contraste seguro sobre amarillo claro */
 }
 
 /* 8. TOTALES */
@@ -158,7 +205,7 @@
     justify-content: space-between;
     padding: 4px 0;
     font-size: 13px;
-    color: #475569;
+    color: #334155; /* ✅ WCAG AA: 9.3:1 */
 }
 .total-final {
     border-top: 2px solid #e2e8f0;
@@ -166,7 +213,7 @@
     margin-top: 4px;
     font-size: 16px;
     font-weight: 700;
-    color: #059669;
+    color: #047857; /* ✅ WCAG AA: 5.48:1 */
 }
 
 /* 9. ACCIONES */
@@ -185,10 +232,11 @@
     cursor: pointer;
     transition: all 0.2s;
 }
-.btn-aceptar { background: #10b981; color: #fff; }
-.btn-aceptar:hover { background: #059669; transform: translateY(-1px); }
-.btn-rechazar { background: #fff; color: #ef4444; border: 2px solid #ef4444; }
-.btn-rechazar:hover { background: #ef4444; color: #fff; transform: translateY(-1px); }
+.btn-aceptar { background: #047857; color: #fff; } /* ✅ WCAG AA: 5.48:1 */
+.btn-aceptar:hover { background: #065f46; transform: translateY(-1px); }
+
+.btn-rechazar { background: #fff; color: #b91c1c; border: 2px solid #b91c1c; } /* ✅ WCAG AA: 6.1:1 */
+.btn-rechazar:hover { background: #b91c1c; color: #fff; transform: translateY(-1px); }
 
 /* 10. MENSAJE POST-ACCIÓN */
 .cot-mensaje {

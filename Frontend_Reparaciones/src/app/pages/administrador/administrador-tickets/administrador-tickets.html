@@ -19,7 +19,7 @@
     <div class="contenido">
         <div class="historial">
             <h3>Reportes por procesar</h3>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">
+            <p class="historial-subtitulo">
                 Aquí aparecen los reportes que aún no han sido convertidos en órdenes de trabajo.
             </p>
 
@@ -27,7 +27,8 @@
                 <input type="text"
                        [(ngModel)]="busquedaCliente"
                        (ngModelChange)="filtrarTickets()"
-                       placeholder="🔍 Buscar ticket por cliente...">
+                       placeholder="🔍 Buscar ticket por cliente..."
+                       aria-label="Buscar ticket por cliente">
                 @if (busquedaCliente) {
                     <button class="btn-limpiar" (click)="limpiarBusqueda()">✕ Limpiar</button>
                 }
@@ -45,10 +46,14 @@
 
             @if (!cargando && !errorCarga) {
                 @if (ticketsFiltrados.length === 0) {
-                    <div class="empty-state" style="text-align: center; padding: 60px 20px;">
-                        <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
-                        <h3 style="color: #10b981;">¡Todo al día!</h3>
-                        <p style="color: #64748b;">No hay reportes pendientes de procesar</p>
+                    <div class="empty-state">
+                        <div class="empty-icon-wrapper">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="empty-svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <h3 class="todo-al-dia">¡Todo al día!</h3>
+                        <p class="empty-state-text">No hay reportes pendientes de procesar en este momento.</p>
                     </div>
                 } @else {
                     <div class="table-responsive">

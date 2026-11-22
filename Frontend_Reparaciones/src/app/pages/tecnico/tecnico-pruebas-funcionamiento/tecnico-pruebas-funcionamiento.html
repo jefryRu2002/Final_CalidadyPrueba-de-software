@@ -85,12 +85,14 @@
                             <div class="prueba-botones">
                                 <button class="btn-resultado ok" 
                                         [class.activo]="prueba.resultado === 'ok'" 
-                                        (click)="setResultado(prueba.id, 'ok')">
+                                        (click)="setResultado(prueba.id, 'ok')"
+                                        aria-label="Marcar como OK">
                                     ✅ OK
                                 </button>
                                 <button class="btn-resultado falla" 
                                         [class.activo]="prueba.resultado === 'falla'" 
-                                        (click)="setResultado(prueba.id, 'falla')">
+                                        (click)="setResultado(prueba.id, 'falla')"
+                                        aria-label="Marcar como falla">
                                     ❌ Falla
                                 </button>
                             </div>
@@ -121,8 +123,8 @@
                 }
 
                 <div class="form-grupo">
-                    <label>📝 Observaciones</label>
-                    <textarea rows="2" 
+                    <label for="obsPruebas">📝 Observaciones</label>
+                    <textarea id="obsPruebas" rows="2" 
                               placeholder="Anota cualquier detalle relevante..." 
                               [(ngModel)]="observaciones"></textarea>
                 </div>

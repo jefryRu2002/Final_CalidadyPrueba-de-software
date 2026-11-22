@@ -97,25 +97,25 @@
                 <form (ngSubmit)="guardarEvaluacion()">
                     <div class="form-grid">
                         <div class="form-grupo">
-                            <label>Procesador</label>
-                            <input type="text" [(ngModel)]="evaluacion.procesador" name="proc" placeholder="Intel Core i5">
+                            <label for="proc">Procesador</label>
+                            <input id="proc" type="text" [(ngModel)]="evaluacion.procesador" name="proc" placeholder="Intel Core i5">
                         </div>
                         <div class="form-grupo">
-                            <label>RAM</label>
-                            <input type="text" [(ngModel)]="evaluacion.ram" name="ram" placeholder="16GB">
+                            <label for="ram">RAM</label>
+                            <input id="ram" type="text" [(ngModel)]="evaluacion.ram" name="ram" placeholder="16GB">
                         </div>
                         <div class="form-grupo">
-                            <label>Almacenamiento</label>
-                            <input type="text" [(ngModel)]="evaluacion.almacenamiento" name="alm" placeholder="512GB SSD">
+                            <label for="alm">Almacenamiento</label>
+                            <input id="alm" type="text" [(ngModel)]="evaluacion.almacenamiento" name="alm" placeholder="512GB SSD">
                         </div>
                         <div class="form-grupo">
-                            <label>Sistema Operativo</label>
-                            <input type="text" [(ngModel)]="evaluacion.sistemaOperativo" name="so" placeholder="Windows 11">
+                            <label for="so">Sistema Operativo</label>
+                            <input id="so" type="text" [(ngModel)]="evaluacion.sistemaOperativo" name="so" placeholder="Windows 11">
                         </div>
                     </div>
                     <div class="form-grupo">
-                        <label>Diagnóstico Técnico <span class="required">*</span></label>
-                        <textarea [(ngModel)]="evaluacion.detallesRevision" name="desc" rows="5" 
+                        <label for="desc">Diagnóstico Técnico <span class="required">*</span></label>
+                        <textarea id="desc" [(ngModel)]="evaluacion.detallesRevision" name="desc" rows="5" 
                                   placeholder="Describe los hallazgos y diagnóstico..." required></textarea>
                     </div>
                     <div class="botones">
