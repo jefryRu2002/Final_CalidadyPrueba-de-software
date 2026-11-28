@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
 
 @Component({
@@ -6,10 +6,10 @@ import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/rou
   standalone: true,
   imports: [RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './admin-layout.html',
-  styleUrl: './admin-layout.css'
+  styleUrl: './admin-layout.css',
 })
 export class AdminLayout {
-  constructor(private router: Router) {}
+  private router = inject(Router);
 
   cerrarSesion(): void {
     localStorage.clear();

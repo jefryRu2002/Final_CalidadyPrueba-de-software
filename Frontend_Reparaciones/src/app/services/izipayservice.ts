@@ -1,8 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-declare var Izipay: any;
+declare let Izipay: any;
 
 export interface IzipayConfig {
   accessKeyId: string;
@@ -28,12 +28,13 @@ export interface IzipayResult {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class IzipayService {
+  private http = inject(HttpClient);
 
   private apiUrl = 'http://localhost:8080/api';
-  
+
   // Configuración (PRODUCCIÓN: mover a environment.ts)
   private config = {
     accessKeyId: 'TU_ACCESS_KEY_ID',
@@ -41,10 +42,8 @@ export class IzipayService {
     endpoint: 'https://api.izipay.pe/v1/payment',
     returnUrl: window.location.origin + '/cliente/pagos?status=success',
     cancelUrl: window.location.origin + '/cliente/pagos?status=cancel',
-    ipnUrl: 'http://localhost:8080/api/pagos/notificacion'
+    ipnUrl: 'http://localhost:8080/api/pagos/notificacion',
   };
-
-  constructor(private http: HttpClient) {}
 
   /**
    * Iniciar pago con formulario Izipay (redirección)
@@ -58,14 +57,16 @@ export class IzipayService {
     clienteApellido: string;
   }): void {
     const transactionId = 'TXN-' + Date.now() + '-' + datos.ordenId;
-    
+
     // Guardar en backend antes de redirigir
-    this.http.post(`${this.apiUrl}/pagos/iniciar`, {
-      pago_id: datos.ordenId,
-      monto: datos.monto,
-      transaction_id: transactionId,
-      cliente_email: datos.clienteEmail
-    }).subscribe();
+    this.http
+      .post(`${this.apiUrl}/pagos/iniciar`, {
+        pago_id: datos.ordenId,
+        monto: datos.monto,
+        transaction_id: transactionId,
+        cliente_email: datos.clienteEmail,
+      })
+      .subscribe();
 
     // Crear formulario dinámico
     const form = document.createElement('form');
@@ -74,20 +75,20 @@ export class IzipayService {
     form.style.display = 'none';
 
     const fields: Record<string, string> = {
-      'accessKeyId': this.config.accessKeyId,
-      'clientSecret': this.config.clientSecret,
-      'action': 'SALES',
-      'currency': 'PEN',
-      'transactionId': transactionId,
-      'amount': (datos.monto * 100).toFixed(0),
-      'returnUrl': this.config.returnUrl + '&txnId=' + transactionId + '&orderId=' + datos.ordenId,
-      'cancelUrl': this.config.cancelUrl + '&orderId=' + datos.ordenId,
-      'ipnUrl': this.config.ipnUrl,
+      accessKeyId: this.config.accessKeyId,
+      clientSecret: this.config.clientSecret,
+      action: 'SALES',
+      currency: 'PEN',
+      transactionId: transactionId,
+      amount: (datos.monto * 100).toFixed(0),
+      returnUrl: this.config.returnUrl + '&txnId=' + transactionId + '&orderId=' + datos.ordenId,
+      cancelUrl: this.config.cancelUrl + '&orderId=' + datos.ordenId,
+      ipnUrl: this.config.ipnUrl,
       'orderDetails[orderId]': 'OT-' + datos.ordenId,
       'orderDetails[description]': datos.descripcion,
       'customer[email]': datos.clienteEmail,
       'customer[firstName]': datos.clienteNombre,
-      'customer[lastName]': datos.clienteApellido
+      'customer[lastName]': datos.clienteApellido,
     };
 
     for (const [key, value] of Object.entries(fields)) {
@@ -133,12 +134,12 @@ export class IzipayService {
       ipnUrl: this.config.ipnUrl,
       orderDetails: {
         orderId: 'OT-' + datos.ordenId,
-        description: datos.descripcion
+        description: datos.descripcion,
       },
       customer: {
         email: datos.clienteEmail,
         firstName: datos.clienteNombre,
-        lastName: datos.clienteApellido
+        lastName: datos.clienteApellido,
       },
       onSuccess: (result: any) => {
         console.log('✅ Pago exitoso:', result);
@@ -151,7 +152,7 @@ export class IzipayService {
       onError: (error: any) => {
         console.error('❌ Error en pago:', error);
         this.guardarResultadoPago(transactionId, 'RECHAZADO', error);
-      }
+      },
     });
 
     izipay.render('#' + datos.containerId);
@@ -161,14 +162,16 @@ export class IzipayService {
    * Guardar resultado del pago en backend
    */
   private guardarResultadoPago(transactionId: string, estado: string, result: any): void {
-    this.http.post(`${this.apiUrl}/pagos/resultado`, {
-      transactionId: transactionId,
-      estado: estado,
-      resultado: result
-    }).subscribe({
-      next: () => console.log('Resultado guardado'),
-      error: (err) => console.error('Error al guardar resultado:', err)
-    });
+    this.http
+      .post(`${this.apiUrl}/pagos/resultado`, {
+        transactionId: transactionId,
+        estado: estado,
+        resultado: result,
+      })
+      .subscribe({
+        next: () => console.log('Resultado guardado'),
+        error: (err) => console.error('Error al guardar resultado:', err),
+      });
   }
 
   /**

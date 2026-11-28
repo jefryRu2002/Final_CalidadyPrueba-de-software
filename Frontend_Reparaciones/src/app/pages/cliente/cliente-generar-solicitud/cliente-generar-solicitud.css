@@ -70,104 +70,6 @@
 }
 
 /* ============================================================
-   BARRA DE BÚSQUEDA Y FILTROS
-   ============================================================ */
-.busqueda-filtros {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-.busqueda-input {
-    flex: 1;
-    min-width: 250px;
-    padding: 12px 16px;
-    padding-left: 44px;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    font-size: 14px;
-    color: #1e293b;
-    background: #ffffff;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: 14px center;
-    transition: all 0.2s ease;
-    outline: none;
-}
-
-.busqueda-input::placeholder {
-    color: #64748b; /* ✅ WCAG AA */
-}
-
-.busqueda-input:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-}
-
-.filtro-select {
-    padding: 12px 36px 12px 16px;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    font-size: 14px;
-    color: #1e293b;
-    background: #ffffff;
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    transition: all 0.2s ease;
-    outline: none;
-    min-width: 160px;
-}
-
-.filtro-select:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-}
-
-.btn-limpiar-filtros {
-    padding: 12px 20px;
-    background: #fee2e2;
-    color: #b91c1c; /* ✅ WCAG AA */
-    border: 1px solid #fecaca;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.btn-limpiar-filtros:hover {
-    background: #fecaca;
-    transform: translateY(-1px);
-}
-
-.resultados-info {
-    font-size: 13px;
-    color: #475569; /* ✅ WCAG AA */
-    margin-bottom: 20px;
-    padding: 10px 16px;
-    background: #f8fafc;
-    border-radius: 10px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border: 1px solid #e2e8f0;
-}
-
-.resultados-info strong {
-    color: #1d4ed8; /* ✅ WCAG AA */
-    font-weight: 700;
-}
-
-/* ============================================================
    TARJETA DEL FORMULARIO
    ============================================================ */
 .form-card {
@@ -427,108 +329,6 @@
 }
 
 /* ============================================================
-   TABLA DE SOLICITUDES
-   ============================================================ */
-.tabla-solicitudes {
-    width: 100%;
-    border-collapse: collapse;
-    background: #ffffff;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-.tabla-solicitudes thead {
-    background: #f8fafc;
-}
-
-.tabla-solicitudes th {
-    padding: 14px 16px;
-    text-align: left;
-    font-weight: 600;
-    color: #475569; /* ✅ WCAG AA */
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid #e2e8f0;
-}
-
-.tabla-solicitudes td {
-    padding: 14px 16px;
-    border-bottom: 1px solid #f1f5f9;
-    font-size: 14px;
-    color: #1e293b;
-}
-
-.tabla-solicitudes tbody tr:hover {
-    background: #f8fafc;
-}
-
-.tabla-solicitudes tbody tr:last-child td {
-    border-bottom: none;
-}
-
-/* Badge de estado en tabla */
-.estado-badge {
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    display: inline-block;
-}
-
-.estado-badge.pendiente {
-    background: #fef3c7;
-    color: #92400e; /* ✅ 6.9:1 */
-}
-
-.estado-badge.en-proceso {
-    background: #dbeafe;
-    color: #1e40af; /* ✅ 7.5:1 */
-}
-
-.estado-badge.terminado {
-    background: #dcfce7;
-    color: #166534; /* ✅ 7.4:1 */
-}
-
-/* Botón Ver */
-.btn-ver {
-    background: #2563eb;
-    color: #ffffff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 13px;
-    transition: all 0.2s ease;
-}
-
-.btn-ver:hover {
-    background: #1d4ed8;
-    transform: translateY(-1px);
-}
-
-/* Estado vacío */
-.sin-resultados {
-    text-align: center;
-    padding: 60px 20px;
-    color: #64748b; /* ✅ WCAG AA */
-}
-
-.sin-resultados .icono-vacio {
-    font-size: 48px;
-    display: block;
-    margin-bottom: 12px;
-}
-
-.sin-resultados p {
-    font-size: 15px;
-    color: #475569; /* ✅ WCAG AA */
-}
-
-/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 768px) {
@@ -538,23 +338,6 @@
 
     .header h1 {
         font-size: 22px;
-    }
-
-    .busqueda-filtros {
-        flex-direction: column;
-    }
-
-    .busqueda-input {
-        min-width: 100%;
-    }
-
-    .filtro-select {
-        width: 100%;
-    }
-
-    .btn-limpiar-filtros {
-        width: 100%;
-        justify-content: center;
     }
 
     .form-card {
@@ -587,14 +370,6 @@
         letter-spacing: 3px;
     }
 
-    .tabla-solicitudes {
-        font-size: 13px;
-    }
-
-    .tabla-solicitudes th,
-    .tabla-solicitudes td {
-        padding: 10px 12px;
-    }
 }
 
 @media (max-width: 480px) {

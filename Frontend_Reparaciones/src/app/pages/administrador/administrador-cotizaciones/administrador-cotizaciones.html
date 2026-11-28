@@ -122,8 +122,8 @@
 
     <!-- Modal Detalle -->
     @if (mostrarDetalle && cotizacionSeleccionada) {
-        <div class="modal-overlay" (click)="cerrarDetalle()">
-            <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-overlay" tabindex="0" (keydown.escape)="cerrarDetalle()" (click)="$event.target === $event.currentTarget && cerrarDetalle()">
+            <div class="modal">
                 <div class="modal-header">
                     <h2>📄 Cotización #{{ cotizacionSeleccionada.idCotizacion }}</h2>
                     <button class="btn-cerrar" (click)="cerrarDetalle()">✕</button>

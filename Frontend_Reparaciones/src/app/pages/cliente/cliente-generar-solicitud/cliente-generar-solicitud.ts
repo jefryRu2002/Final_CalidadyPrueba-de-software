@@ -1,16 +1,18 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-generar-reporte',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './cliente-generar-solicitud.html',
-  styleUrls: ['./cliente-generar-solicitud.css']
+  styleUrls: ['./cliente-generar-solicitud.css'],
 })
-export class ClienteGenerarSolicitud implements OnInit, OnDestroy {
+export class ClienteGenerarSolicitud implements OnInit {
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
 
   marcaSeleccionada = '';
   otraMarca = '';
@@ -22,7 +24,7 @@ export class ClienteGenerarSolicitud implements OnInit, OnDestroy {
     tipoEquipo: '',
     numeroSerie: '',
     descripcionFalla: '',
-    idCliente: ''
+    idCliente: '',
   };
 
   enviado = false;
@@ -32,16 +34,9 @@ export class ClienteGenerarSolicitud implements OnInit, OnDestroy {
 
   private apiUrl = 'http://localhost:8080/api';
 
-  constructor(
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef
-  ) {}
-
   ngOnInit(): void {
     this.cargarIdCliente();
   }
-
-  ngOnDestroy(): void {}
 
   // ==================== CARGAR DATOS ====================
   cargarIdCliente(): void {
@@ -119,7 +114,7 @@ export class ClienteGenerarSolicitud implements OnInit, OnDestroy {
       tipoEquipo: this.reporte.tipoEquipo,
       numeroSerie: this.reporte.numeroSerie.trim().toUpperCase(),
       descripcionFalla: this.reporte.descripcionFalla.trim(),
-      idCliente: Number(this.reporte.idCliente)
+      idCliente: Number(this.reporte.idCliente),
     };
 
     console.log('📤 Enviando reporte:', datos);
@@ -127,12 +122,12 @@ export class ClienteGenerarSolicitud implements OnInit, OnDestroy {
     this.http.post<any>(`${this.apiUrl}/reportes`, datos).subscribe({
       next: (respuesta) => {
         console.log('✅ Respuesta del servidor:', respuesta);
-        
+
         this.cargando = false;
-        
+
         // Obtener ID del reporte
         const idReporte = respuesta.idReporte || respuesta.id_reporte;
-        
+
         if (idReporte) {
           this.codigoOperacion = 'REP-' + idReporte;
           this.enviado = true;
@@ -142,26 +137,28 @@ export class ClienteGenerarSolicitud implements OnInit, OnDestroy {
           this.enviado = true;
           this.codigoOperacion = 'REP-OK';
         }
-        
+
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('❌ Error al enviar:', err);
-        
+
         this.cargando = false;
-        
+
         if (err.status === 0) {
-          this.error = '❌ No se pudo conectar al servidor. Verifica que el backend esté corriendo en http://localhost:8080';
+          this.error =
+            '❌ No se pudo conectar al servidor. Verifica que el backend esté corriendo en http://localhost:8080';
         } else if (err.status === 500) {
-          this.error = '❌ Error interno del servidor: ' + (err.error?.error || 'Intente nuevamente.');
+          this.error =
+            '❌ Error interno del servidor: ' + (err.error?.error || 'Intente nuevamente.');
         } else if (err.status === 400) {
           this.error = '❌ Datos inválidos: ' + (err.error?.error || 'Verifica la información.');
         } else {
           this.error = '❌ Error al enviar el reporte. Intente nuevamente.';
         }
-        
+
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -177,7 +174,7 @@ export class ClienteGenerarSolicitud implements OnInit, OnDestroy {
       tipoEquipo: '',
       numeroSerie: '',
       descripcionFalla: '',
-      idCliente: this.reporte.idCliente // Mantener ID del cliente
+      idCliente: this.reporte.idCliente, // Mantener ID del cliente
     };
     this.error = '';
     this.codigoOperacion = '';

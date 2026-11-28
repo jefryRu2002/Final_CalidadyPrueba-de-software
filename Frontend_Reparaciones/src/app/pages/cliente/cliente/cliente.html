@@ -76,20 +76,9 @@
 
         <!-- CORREO -->
         <div class="form-grupo">
-          <label for="perfilCorreo">Correo electrónico *</label>
-          <input
-            id="perfilCorreo"
-            type="email"
-            [(ngModel)]="perfil.correo"
-            [disabled]="!editando"
-            [class.input-editable]="editando"
-            [class.input-readonly]="!editando"
-            placeholder="correo@ejemplo.com"
-            (input)="validarCorreo()"
-            name="correo">
-          @if (editando) {
-            <small class="text-info">Ejemplo: nombre&#64;dominio.com</small>
-          }
+          <label for="perfilCorreo">Correo electrónico</label>
+          <input id="perfilCorreo" type="email" [value]="perfil.correo" disabled class="input-readonly">
+          <small class="text-muted">No editable</small>
         </div>
 
       </div>
@@ -119,8 +108,8 @@
 
 <!-- Modal MFA -->
 @if (mostrarModalMFA) {
-  <div class="modal-overlay" (click)="cerrarModalMFA()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" tabindex="0" (keydown.escape)="cerrarModalMFA()" (click)="$event.target === $event.currentTarget && cerrarModalMFA()">
+    <div class="modal-content">
       
       <div class="modal-header">
         <h3 class="modal-titulo">🔐 Configurar Autenticador</h3>

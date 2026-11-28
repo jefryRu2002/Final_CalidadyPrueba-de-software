@@ -124,8 +124,8 @@
 
   <!-- Modal Detalle -->
   @if (modalAbierto && pagoSeleccionado) {
-    <div class="modal-overlay" (click)="cerrarDetalle()">
-      <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" tabindex="0" (keydown.escape)="cerrarDetalle()" (click)="$event.target === $event.currentTarget && cerrarDetalle()">
+      <div class="modal-card">
         
         <div class="modal-header">
           <h2>📄 Detalle del Pago #{{ pagoSeleccionado.id }}</h2>
@@ -135,27 +135,27 @@
         <div class="modal-body">
           <div class="detalle-grid">
             <div class="detalle-item">
-              <label>Cliente</label>
+              <span class="detalle-label">Cliente</span>
               <span class="valor-destacado">{{ pagoSeleccionado.cliente }}</span>
             </div>
             <div class="detalle-item">
-              <label>Ticket</label>
+              <span class="detalle-label">Ticket</span>
               <span>{{ pagoSeleccionado.ticket }}</span>
             </div>
             <div class="detalle-item">
-              <label>Monto</label>
+              <span class="detalle-label">Monto</span>
               <span class="monto-destacado">{{ formatearMonto(pagoSeleccionado.monto) }}</span>
             </div>
             <div class="detalle-item">
-              <label>Método</label>
+              <span class="detalle-label">Método</span>
               <span>{{ pagoSeleccionado.metodo }}</span>
             </div>
             <div class="detalle-item">
-              <label>Fecha</label>
+              <span class="detalle-label">Fecha</span>
               <span>{{ formatearFecha(pagoSeleccionado.fecha) }}</span>
             </div>
             <div class="detalle-item">
-              <label>Estado</label>
+              <span class="detalle-label">Estado</span>
               <span class="badge" 
                     [class.aprobado]="pagoSeleccionado.estado === 'Aprobado'"
                     [class.pendiente]="pagoSeleccionado.estado === 'Pagado'"

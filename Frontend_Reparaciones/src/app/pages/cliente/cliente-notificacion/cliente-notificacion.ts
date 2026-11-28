@@ -1,5 +1,5 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
+
 import { HttpClient } from '@angular/common/http';
 
 export interface Notificacion {
@@ -14,19 +14,18 @@ export interface Notificacion {
 @Component({
   selector: 'app-notificaciones',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './cliente-notificacion.html',
-  styleUrls: ['./cliente-notificacion.css']
+  styleUrls: ['./cliente-notificacion.css'],
 })
 export class ClienteNotificacion implements OnInit {
+  private http = inject(HttpClient);
 
   notificaciones = signal<Notificacion[]>([]);
   cargando = signal(true);
   error = signal('');
 
   private apiUrl = 'http://localhost:8080/api';
-
-  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
     this.cargarNotificaciones();
@@ -37,8 +36,11 @@ export class ClienteNotificacion implements OnInit {
     this.error.set('');
 
     // Obtener el ID del cliente logueado
-    const clienteData = localStorage.getItem('clienteData') || localStorage.getItem('userData') || localStorage.getItem('usuario');
-    
+    const clienteData =
+      localStorage.getItem('clienteData') ||
+      localStorage.getItem('userData') ||
+      localStorage.getItem('usuario');
+
     if (!clienteData) {
       console.warn('⚠️ No hay datos de cliente en localStorage');
       this.cargarDesdeLocalStorage();
@@ -48,7 +50,7 @@ export class ClienteNotificacion implements OnInit {
     try {
       const cliente = JSON.parse(clienteData);
       const idCliente = cliente.idPersona || cliente.id_persona || cliente.id;
-      
+
       if (!idCliente) {
         console.warn('⚠️ No se encontró ID de cliente');
         this.cargarDesdeLocalStorage();
@@ -61,9 +63,9 @@ export class ClienteNotificacion implements OnInit {
       this.http.get<any[]>(`${this.apiUrl}/ordenes-trabajo`).subscribe({
         next: (ordenes) => {
           console.log('📦 Órdenes recibidas:', ordenes?.length);
-          
+
           // Filtrar órdenes de este cliente
-          const ordenesCliente = (ordenes || []).filter(o => {
+          const ordenesCliente = (ordenes || []).filter((o) => {
             const idPersona = o.idPersona || o.id_persona || o.idCliente || o.id_cliente;
             const reporteIdPersona = o.reporte?.idPersona || o.reporte?.id_persona;
             return idPersona == idCliente || reporteIdPersona == idCliente;
@@ -74,10 +76,10 @@ export class ClienteNotificacion implements OnInit {
           if (ordenesCliente.length > 0) {
             const notificacionesGeneradas = this.generarNotificaciones(ordenesCliente);
             const estadoLeidas = this.cargarEstadoLeidas();
-            
-            const notificacionesFinales = notificacionesGeneradas.map(n => ({
+
+            const notificacionesFinales = notificacionesGeneradas.map((n) => ({
               ...n,
-              leida: estadoLeidas[n.id] || false
+              leida: estadoLeidas[n.id] || false,
             }));
 
             notificacionesFinales.sort((a, b) => {
@@ -89,16 +91,15 @@ export class ClienteNotificacion implements OnInit {
           } else {
             this.notificaciones.set([]);
           }
-          
+
           this.cargando.set(false);
         },
         error: (err) => {
           console.error('❌ Error al cargar órdenes:', err);
           // Intentar cargar desde localStorage como fallback
           this.cargarDesdeLocalStorage();
-        }
+        },
       });
-
     } catch (e) {
       console.error('❌ Error al parsear datos del cliente:', e);
       this.cargarDesdeLocalStorage();
@@ -107,18 +108,26 @@ export class ClienteNotificacion implements OnInit {
 
   private cargarDesdeLocalStorage(): void {
     console.log('🔄 Cargando desde localStorage...');
-    
+
     const reportesCliente = localStorage.getItem('reportesCliente');
     const ordenesCliente = localStorage.getItem('ordenesCliente');
-    
+
     let datos: any[] = [];
-    
+
     if (reportesCliente) {
-      try { datos = JSON.parse(reportesCliente); } catch (e) {}
+      try {
+        datos = JSON.parse(reportesCliente);
+      } catch {
+        this.error.set('No se pudieron leer las notificaciones guardadas.');
+      }
     }
-    
+
     if (datos.length === 0 && ordenesCliente) {
-      try { datos = JSON.parse(ordenesCliente); } catch (e) {}
+      try {
+        datos = JSON.parse(ordenesCliente);
+      } catch {
+        this.error.set('No se pudieron leer las notificaciones guardadas.');
+      }
     }
 
     if (datos.length === 0) {
@@ -130,10 +139,10 @@ export class ClienteNotificacion implements OnInit {
 
     const notificacionesGeneradas = this.generarNotificaciones(datos);
     const estadoLeidas = this.cargarEstadoLeidas();
-    
-    const notificacionesFinales = notificacionesGeneradas.map(n => ({
+
+    const notificacionesFinales = notificacionesGeneradas.map((n) => ({
       ...n,
-      leida: estadoLeidas[n.id] || false
+      leida: estadoLeidas[n.id] || false,
     }));
 
     notificacionesFinales.sort((a, b) => {
@@ -147,21 +156,26 @@ export class ClienteNotificacion implements OnInit {
 
   private generarNotificaciones(ordenes: any[]): Notificacion[] {
     const notificaciones: Notificacion[] = [];
-    
-    ordenes.forEach(orden => {
+
+    ordenes.forEach((orden) => {
       const estado = (orden.estado || 'PENDIENTE').toUpperCase();
       const idOrden = orden.idOrden || orden.id_orden || 0;
       const idReporte = orden.idReporte || orden.id_reporte || orden.reporte?.idReporte || idOrden;
-      const equipo = orden.equipo || `${orden.marca || ''} ${orden.modelo || ''}`.trim() || 'Equipo';
-      
+      const equipo =
+        orden.equipo || `${orden.marca || ''} ${orden.modelo || ''}`.trim() || 'Equipo';
+
       // 1. Solicitud registrada (siempre)
       notificaciones.push({
         id: idOrden * 100 + 1,
         titulo: '📝 Solicitud Registrada',
         mensaje: `Tu solicitud OT-${idOrden} (${equipo}) ha sido registrada. Te notificaremos cuando haya actualizaciones.`,
-        fecha: orden.fechaInicio || orden.fecha_inicio || orden.fechaCreacion || new Date().toISOString(),
+        fecha:
+          orden.fechaInicio ||
+          orden.fecha_inicio ||
+          orden.fechaCreacion ||
+          new Date().toISOString(),
         leida: false,
-        tipo: 'estado'
+        tipo: 'estado',
       });
 
       // 2. Cotización pendiente
@@ -172,7 +186,7 @@ export class ClienteNotificacion implements OnInit {
           mensaje: `Se ha enviado una cotización para tu ${equipo} (OT-${idOrden}). Revisa y aprueba o rechaza.`,
           fecha: orden.fechaCotizacion || orden.fechaActualizacion || new Date().toISOString(),
           leida: false,
-          tipo: 'cotizacion'
+          tipo: 'cotizacion',
         });
       }
 
@@ -184,7 +198,7 @@ export class ClienteNotificacion implements OnInit {
           mensaje: `Has rechazado la cotización para tu ${equipo} (OT-${idOrden}). El equipo será preparado para devolución.`,
           fecha: orden.fechaRespuesta || new Date().toISOString(),
           leida: false,
-          tipo: 'cotizacion'
+          tipo: 'cotizacion',
         });
       }
 
@@ -196,19 +210,23 @@ export class ClienteNotificacion implements OnInit {
           mensaje: `Tu ${equipo} (OT-${idOrden}) está listo para ser recogido. Acércate a nuestras instalaciones. Horario: L-V 9:00-18:00.`,
           fecha: orden.fechaDevolucion || orden.fechaActualizacion || new Date().toISOString(),
           leida: false,
-          tipo: 'devolucion'
+          tipo: 'devolucion',
         });
       }
 
       // 5. Equipo en reparación
-      if (estado === 'COTIZACION_APROBADA' || estado === 'EN_REPARACION' || estado === 'EN_PROCESO') {
+      if (
+        estado === 'COTIZACION_APROBADA' ||
+        estado === 'EN_REPARACION' ||
+        estado === 'EN_PROCESO'
+      ) {
         notificaciones.push({
           id: idOrden * 100 + 5,
           titulo: '🔧 Equipo en Reparación',
           mensaje: `Tu ${equipo} (OT-${idOrden}) está siendo reparado. Te notificaremos cuando esté listo.`,
           fecha: orden.fechaActualizacion || new Date().toISOString(),
           leida: false,
-          tipo: 'estado'
+          tipo: 'estado',
         });
       }
 
@@ -220,7 +238,7 @@ export class ClienteNotificacion implements OnInit {
           mensaje: `¡Buenas noticias! Tu ${equipo} (OT-${idOrden}) está reparado y listo para ser recogido.`,
           fecha: orden.fechaFin || orden.fechaActualizacion || new Date().toISOString(),
           leida: false,
-          tipo: 'entrega'
+          tipo: 'entrega',
         });
       }
 
@@ -232,7 +250,7 @@ export class ClienteNotificacion implements OnInit {
           mensaje: `Tu ${equipo} (OT-${idOrden}) ha sido entregado. ¡Gracias por confiar en nosotros!`,
           fecha: orden.fechaFin || new Date().toISOString(),
           leida: false,
-          tipo: 'entrega'
+          tipo: 'entrega',
         });
       }
     });
@@ -243,57 +261,63 @@ export class ClienteNotificacion implements OnInit {
   private cargarEstadoLeidas(): Record<number, boolean> {
     const guardado = localStorage.getItem('notificacionesLeidas');
     if (guardado) {
-      try { return JSON.parse(guardado); } catch (e) {}
+      try {
+        return JSON.parse(guardado);
+      } catch {
+        this.error.set('No se pudo recuperar el estado de lectura de las notificaciones.');
+      }
     }
     return {};
   }
 
   private guardarEstadoLeidas(): void {
     const estado: Record<number, boolean> = {};
-    this.notificaciones().forEach(n => estado[n.id] = n.leida);
+    this.notificaciones().forEach((n) => (estado[n.id] = n.leida));
     localStorage.setItem('notificacionesLeidas', JSON.stringify(estado));
   }
 
-  noLeidas = computed(() => 
-    this.notificaciones().filter(n => !n.leida).length
-  );
+  noLeidas = computed(() => this.notificaciones().filter((n) => !n.leida).length);
 
   marcarLeida(id: number): void {
-    this.notificaciones.update(lista =>
-      lista.map(n => n.id === id ? { ...n, leida: true } : n)
+    this.notificaciones.update((lista) =>
+      lista.map((n) => (n.id === id ? { ...n, leida: true } : n)),
     );
     this.guardarEstadoLeidas();
   }
 
   marcarTodasLeidas(): void {
-    this.notificaciones.update(lista =>
-      lista.map(n => ({ ...n, leida: true }))
-    );
+    this.notificaciones.update((lista) => lista.map((n) => ({ ...n, leida: true })));
     this.guardarEstadoLeidas();
   }
 
   eliminarNotificacion(id: number): void {
-    this.notificaciones.update(lista =>
-      lista.filter(n => n.id !== id)
-    );
+    this.notificaciones.update((lista) => lista.filter((n) => n.id !== id));
     this.guardarEstadoLeidas();
   }
 
   iconoTipo(tipo: Notificacion['tipo']): string {
     switch (tipo) {
-      case 'entrega': return '📦';
-      case 'devolucion': return '📦';
-      case 'cotizacion': return '💰';
-      default: return '🔄';
+      case 'entrega':
+        return '📦';
+      case 'devolucion':
+        return '📦';
+      case 'cotizacion':
+        return '💰';
+      default:
+        return '🔄';
     }
   }
 
   claseTipo(tipo: Notificacion['tipo']): string {
     switch (tipo) {
-      case 'entrega': return 'tipo-entrega';
-      case 'devolucion': return 'tipo-devolucion';
-      case 'cotizacion': return 'tipo-cotizacion';
-      default: return 'tipo-estado';
+      case 'entrega':
+        return 'tipo-entrega';
+      case 'devolucion':
+        return 'tipo-devolucion';
+      case 'cotizacion':
+        return 'tipo-cotizacion';
+      default:
+        return 'tipo-estado';
     }
   }
 
@@ -301,9 +325,9 @@ export class ClienteNotificacion implements OnInit {
     if (!fecha) return '';
     const ahora = new Date();
     const fechaNot = new Date(fecha);
-    
+
     if (isNaN(fechaNot.getTime())) return fecha;
-    
+
     const diff = ahora.getTime() - fechaNot.getTime();
     const minutos = Math.floor(diff / 60000);
     const horas = Math.floor(diff / 3600000);
@@ -314,11 +338,11 @@ export class ClienteNotificacion implements OnInit {
     if (horas < 24) return `Hace ${horas} h`;
     if (dias === 1) return 'Ayer';
     if (dias < 7) return `Hace ${dias} días`;
-    
+
     return fechaNot.toLocaleDateString('es-PE', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
     });
   }
 }

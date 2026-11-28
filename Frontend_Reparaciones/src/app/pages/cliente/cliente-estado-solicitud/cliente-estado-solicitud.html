@@ -11,37 +11,37 @@
 
   @if (!cargando && solicitudes.length > 0) {
     <div class="cards-resumen">
-      <div class="card-resumen" [class.activo]="estadoFiltro === ''" (click)="estadoFiltro = ''">
+      <div class="card-resumen" role="button" tabindex="0" [class.activo]="estadoFiltro === ''" (click)="estadoFiltro = ''" (keydown.enter)="estadoFiltro = ''" (keydown.space)="$event.preventDefault(); estadoFiltro = ''">
         <span class="card-numero">{{ solicitudes.length }}</span>
         <span class="card-texto">📋 Total</span>
       </div>
-      <div class="card-resumen" [class.activo]="estadoFiltro === 'PENDIENTE'" 
-           (click)="estadoFiltro = estadoFiltro === 'PENDIENTE' ? '' : 'PENDIENTE'">
+      <div class="card-resumen" role="button" tabindex="0" [class.activo]="estadoFiltro === 'PENDIENTE'"
+           (click)="estadoFiltro = estadoFiltro === 'PENDIENTE' ? '' : 'PENDIENTE'" (keydown.enter)="estadoFiltro = estadoFiltro === 'PENDIENTE' ? '' : 'PENDIENTE'" (keydown.space)="$event.preventDefault(); estadoFiltro = estadoFiltro === 'PENDIENTE' ? '' : 'PENDIENTE'">
         <span class="card-numero">{{ contarPorEstado('PENDIENTE') }}</span>
         <span class="card-texto">⏳ Pendientes</span>
       </div>
-      <div class="card-resumen" [class.activo]="estadoFiltro === 'ASIGNADO'" 
-           (click)="estadoFiltro = estadoFiltro === 'ASIGNADO' ? '' : 'ASIGNADO'">
+      <div class="card-resumen" role="button" tabindex="0" [class.activo]="estadoFiltro === 'ASIGNADO'"
+           (click)="estadoFiltro = estadoFiltro === 'ASIGNADO' ? '' : 'ASIGNADO'" (keydown.enter)="estadoFiltro = estadoFiltro === 'ASIGNADO' ? '' : 'ASIGNADO'" (keydown.space)="$event.preventDefault(); estadoFiltro = estadoFiltro === 'ASIGNADO' ? '' : 'ASIGNADO'">
         <span class="card-numero">{{ contarPorEstado('ASIGNADO') }}</span>
         <span class="card-texto">👤 Asignado</span>
       </div>
-      <div class="card-resumen" [class.activo]="estadoFiltro === 'EN_PROCESO'" 
-           (click)="estadoFiltro = estadoFiltro === 'EN_PROCESO' ? '' : 'EN_PROCESO'">
+      <div class="card-resumen" role="button" tabindex="0" [class.activo]="estadoFiltro === 'EN_PROCESO'"
+           (click)="estadoFiltro = estadoFiltro === 'EN_PROCESO' ? '' : 'EN_PROCESO'" (keydown.enter)="estadoFiltro = estadoFiltro === 'EN_PROCESO' ? '' : 'EN_PROCESO'" (keydown.space)="$event.preventDefault(); estadoFiltro = estadoFiltro === 'EN_PROCESO' ? '' : 'EN_PROCESO'">
         <span class="card-numero">{{ contarPorEstado('EN_PROCESO') }}</span>
         <span class="card-texto">🔍 Diagnóstico</span>
       </div>
-      <div class="card-resumen" [class.activo]="estadoFiltro === 'EN_REPARACION'" 
-           (click)="estadoFiltro = estadoFiltro === 'EN_REPARACION' ? '' : 'EN_REPARACION'">
+      <div class="card-resumen" role="button" tabindex="0" [class.activo]="estadoFiltro === 'EN_REPARACION'"
+           (click)="estadoFiltro = estadoFiltro === 'EN_REPARACION' ? '' : 'EN_REPARACION'" (keydown.enter)="estadoFiltro = estadoFiltro === 'EN_REPARACION' ? '' : 'EN_REPARACION'" (keydown.space)="$event.preventDefault(); estadoFiltro = estadoFiltro === 'EN_REPARACION' ? '' : 'EN_REPARACION'">
         <span class="card-numero">{{ contarPorEstado('EN_REPARACION') }}</span>
         <span class="card-texto">🔧 Reparación</span>
       </div>
-      <div class="card-resumen" [class.activo]="estadoFiltro === 'TERMINADO'" 
-           (click)="estadoFiltro = estadoFiltro === 'TERMINADO' ? '' : 'TERMINADO'">
+      <div class="card-resumen" role="button" tabindex="0" [class.activo]="estadoFiltro === 'TERMINADO'"
+           (click)="estadoFiltro = estadoFiltro === 'TERMINADO' ? '' : 'TERMINADO'" (keydown.enter)="estadoFiltro = estadoFiltro === 'TERMINADO' ? '' : 'TERMINADO'" (keydown.space)="$event.preventDefault(); estadoFiltro = estadoFiltro === 'TERMINADO' ? '' : 'TERMINADO'">
         <span class="card-numero">{{ contarPorEstado('TERMINADO') }}</span>
         <span class="card-texto">✅ Terminados</span>
       </div>
-      <div class="card-resumen" [class.activo]="estadoFiltro === 'ENTREGADO'" 
-           (click)="estadoFiltro = estadoFiltro === 'ENTREGADO' ? '' : 'ENTREGADO'">
+      <div class="card-resumen" role="button" tabindex="0" [class.activo]="estadoFiltro === 'ENTREGADO'"
+           (click)="estadoFiltro = estadoFiltro === 'ENTREGADO' ? '' : 'ENTREGADO'" (keydown.enter)="estadoFiltro = estadoFiltro === 'ENTREGADO' ? '' : 'ENTREGADO'" (keydown.space)="$event.preventDefault(); estadoFiltro = estadoFiltro === 'ENTREGADO' ? '' : 'ENTREGADO'">
         <span class="card-numero">{{ contarPorEstado('ENTREGADO') }}</span>
         <span class="card-texto">📦 Entregados</span>
       </div>
@@ -116,8 +116,8 @@
   }
 
   @if (reporteSeleccionado) {
-    <div class="modal-overlay" (click)="cerrarDetalle()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" tabindex="0" (keydown.escape)="cerrarDetalle()" (click)="$event.target === $event.currentTarget && cerrarDetalle()">
+      <div class="modal-content">
         <div class="modal-header">
           <h2>📋 {{ reporteSeleccionado.codigo }}</h2>
           <button class="modal-close" (click)="cerrarDetalle()">✕</button>

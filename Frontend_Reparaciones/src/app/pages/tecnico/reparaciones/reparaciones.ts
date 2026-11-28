@@ -1,17 +1,18 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-reparaciones',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './reparaciones.html',
-  styleUrls: ['./reparaciones.css']
+  styleUrls: ['./reparaciones.css'],
 })
 export class Reparaciones implements OnInit {
-  
+  private http = inject(HttpClient);
+
   ordenes: any[] = [];
   ordenSeleccionada: any = null;
   cargando = false;
@@ -23,14 +24,12 @@ export class Reparaciones implements OnInit {
   nuevoTrabajo = '';
   repuestos: any[] = [];
   notas = '';
-  
+
   nuevoRepuesto = { nombre: '', cantidad: 1, precio: 0 };
 
   estados = ['En recepción', 'En diagnóstico', 'En reparación', 'En pruebas', 'Listo para entrega'];
 
   private apiUrl = 'http://localhost:8080/api';
-
-  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
@@ -42,7 +41,7 @@ export class Reparaciones implements OnInit {
     this.cargando = true;
     this.http.get<any[]>(`${this.apiUrl}/ordenes-trabajo`).subscribe({
       next: (data) => {
-        this.ordenes = (data || []).filter(o => {
+        this.ordenes = (data || []).filter((o) => {
           const idTec = Number(o.idTecnico || o.tecnico?.idPersona || 0);
           return idTec === this.idTecnico;
         });
@@ -51,7 +50,7 @@ export class Reparaciones implements OnInit {
       error: (err) => {
         this.error = 'Error al cargar órdenes';
         this.cargando = false;
-      }
+      },
     });
   }
 
@@ -94,7 +93,10 @@ export class Reparaciones implements OnInit {
 
   get totalRepuestos(): number {
     if (!this.ordenSeleccionada?.repuestos) return 0;
-    return this.ordenSeleccionada.repuestos.reduce((sum: number, r: any) => sum + (r.cantidad * r.precio), 0);
+    return this.ordenSeleccionada.repuestos.reduce(
+      (sum: number, r: any) => sum + r.cantidad * r.precio,
+      0,
+    );
   }
 
   // ==================== ESTADO ====================
@@ -121,20 +123,22 @@ export class Reparaciones implements OnInit {
     const estadoBackend = this.mapearEstadoBackend(nuevoEstado);
     this.procesando = true;
 
-    this.http.put(`${this.apiUrl}/ordenes-trabajo/${this.ordenSeleccionada.idOrden}`, {
-      estado: estadoBackend
-    }).subscribe({
-      next: () => {
-        this.ordenSeleccionada.estado = estadoBackend;
-        this.exito = `✅ Estado actualizado a "${nuevoEstado}"`;
-        this.procesando = false;
-        setTimeout(() => this.exito = '', 3000);
-      },
-      error: (err) => {
-        this.error = 'Error al actualizar estado';
-        this.procesando = false;
-      }
-    });
+    this.http
+      .put(`${this.apiUrl}/ordenes-trabajo/${this.ordenSeleccionada.idOrden}`, {
+        estado: estadoBackend,
+      })
+      .subscribe({
+        next: () => {
+          this.ordenSeleccionada.estado = estadoBackend;
+          this.exito = `✅ Estado actualizado a "${nuevoEstado}"`;
+          this.procesando = false;
+          setTimeout(() => (this.exito = ''), 3000);
+        },
+        error: (err) => {
+          this.error = 'Error al actualizar estado';
+          this.procesando = false;
+        },
+      });
   }
 
   retrocederEstado(): void {
@@ -145,18 +149,20 @@ export class Reparaciones implements OnInit {
     if (!confirm(`¿Retroceder a "${estadoAnterior}"?`)) return;
     this.procesando = true;
 
-    this.http.put(`${this.apiUrl}/ordenes-trabajo/${this.ordenSeleccionada.idOrden}`, {
-      estado: estadoBackend
-    }).subscribe({
-      next: () => {
-        this.ordenSeleccionada.estado = estadoBackend;
-        this.procesando = false;
-      },
-      error: (err) => {
-        this.error = 'Error al retroceder';
-        this.procesando = false;
-      }
-    });
+    this.http
+      .put(`${this.apiUrl}/ordenes-trabajo/${this.ordenSeleccionada.idOrden}`, {
+        estado: estadoBackend,
+      })
+      .subscribe({
+        next: () => {
+          this.ordenSeleccionada.estado = estadoBackend;
+          this.procesando = false;
+        },
+        error: (err) => {
+          this.error = 'Error al retroceder';
+          this.procesando = false;
+        },
+      });
   }
 
   // ==================== GUARDAR ====================
@@ -164,39 +170,47 @@ export class Reparaciones implements OnInit {
     if (!this.ordenSeleccionada) return;
     this.procesando = true;
 
-    this.http.put(`${this.apiUrl}/ordenes-trabajo/${this.ordenSeleccionada.idOrden}`, {
-      trabajosRealizados: this.ordenSeleccionada.trabajosRealizados,
-      repuestos: this.ordenSeleccionada.repuestos,
-      notas: this.notas
-    }).subscribe({
-      next: () => {
-        this.exito = '✅ Cambios guardados correctamente';
-        this.procesando = false;
-        setTimeout(() => this.exito = '', 3000);
-      },
-      error: (err) => {
-        this.error = 'Error al guardar cambios';
-        this.procesando = false;
-      }
-    });
+    this.http
+      .put(`${this.apiUrl}/ordenes-trabajo/${this.ordenSeleccionada.idOrden}`, {
+        trabajosRealizados: this.ordenSeleccionada.trabajosRealizados,
+        repuestos: this.ordenSeleccionada.repuestos,
+        notas: this.notas,
+      })
+      .subscribe({
+        next: () => {
+          this.exito = '✅ Cambios guardados correctamente';
+          this.procesando = false;
+          setTimeout(() => (this.exito = ''), 3000);
+        },
+        error: (err) => {
+          this.error = 'Error al guardar cambios';
+          this.procesando = false;
+        },
+      });
   }
 
   // ==================== UTILITARIOS ====================
   private mapearEstado(estado: string): string {
     const m: Record<string, string> = {
-      'PENDIENTE': 'En recepción', 'RECEPCIONADO': 'En recepción',
-      'EN_DIAGNOSTICO': 'En diagnóstico', 'EN_PROCESO': 'En reparación',
-      'EN_REPARACION': 'En reparación', 'EN_PRUEBAS': 'En pruebas',
-      'TERMINADO': 'Listo para entrega', 'LISTO_ENTREGA': 'Listo para entrega'
+      PENDIENTE: 'En recepción',
+      RECEPCIONADO: 'En recepción',
+      EN_DIAGNOSTICO: 'En diagnóstico',
+      EN_PROCESO: 'En reparación',
+      EN_REPARACION: 'En reparación',
+      EN_PRUEBAS: 'En pruebas',
+      TERMINADO: 'Listo para entrega',
+      LISTO_ENTREGA: 'Listo para entrega',
     };
     return m[estado] || estado || 'En recepción';
   }
 
   private mapearEstadoBackend(estado: string): string {
     const m: Record<string, string> = {
-      'En recepción': 'RECEPCIONADO', 'En diagnóstico': 'EN_DIAGNOSTICO',
-      'En reparación': 'EN_REPARACION', 'En pruebas': 'EN_PRUEBAS',
-      'Listo para entrega': 'LISTO_ENTREGA'
+      'En recepción': 'RECEPCIONADO',
+      'En diagnóstico': 'EN_DIAGNOSTICO',
+      'En reparación': 'EN_REPARACION',
+      'En pruebas': 'EN_PRUEBAS',
+      'Listo para entrega': 'LISTO_ENTREGA',
     };
     return m[estado] || 'RECEPCIONADO';
   }
@@ -209,7 +223,9 @@ export class Reparaciones implements OnInit {
   }
 
   formatearMonto(monto: number): string {
-    return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(monto || 0);
+    return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(
+      monto || 0,
+    );
   }
 
   recargar(): void {

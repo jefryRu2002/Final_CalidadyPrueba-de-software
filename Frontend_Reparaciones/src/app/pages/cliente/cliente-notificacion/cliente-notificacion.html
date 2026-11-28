@@ -49,7 +49,11 @@
           [class.no-leida]="!n.leida"
           [class.tipo-estado]="n.tipo === 'estado'"
           [class.tipo-entrega]="n.tipo === 'entrega'"
-          (click)="marcarLeida(n.id)">
+          role="button"
+          tabindex="0"
+          (click)="marcarLeida(n.id)"
+          (keydown.enter)="marcarLeida(n.id)"
+          (keydown.space)="$event.preventDefault(); marcarLeida(n.id)">
           
           <div class="notif-icono">{{ iconoTipo(n.tipo) }}</div>
           

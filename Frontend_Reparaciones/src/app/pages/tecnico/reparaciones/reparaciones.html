@@ -12,8 +12,8 @@
     @if (exito) { <div class="exito"><p>{{ exito }}</p></div> }
 
     <div class="selector">
-        <label>📋 Seleccionar Orden</label>
-        <select (change)="seleccionarOrden($event)">
+        <label for="ordenSeleccionada">📋 Seleccionar Orden</label>
+        <select id="ordenSeleccionada" (change)="seleccionarOrden($event)">
             <option value="" disabled selected>Seleccione una orden...</option>
             @for (o of ordenes; track o.idOrden) {
                 <option [ngValue]="o">OT-{{ o.idOrden }} — {{ o.marca }} {{ o.modelo }}</option>

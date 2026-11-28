@@ -1,15 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
+  private http = inject(HttpClient);
 
   private apiUrl = 'http://localhost:8080/api';
-
-  constructor(private http: HttpClient) {}
 
   // Login con tu BD (tabla credenciales)
   login(usuario: string, contrasena: string): Observable<any> {
@@ -36,7 +35,7 @@ export class AuthService {
   cerrarSesion() {
     localStorage.removeItem('usuario');
     localStorage.removeItem('idPersona'); // Limpieza extra por si acaso
-    localStorage.removeItem('token');     // Limpieza extra por si acaso
+    localStorage.removeItem('token'); // Limpieza extra por si acaso
   }
 
   // Verificar autenticado
@@ -48,6 +47,6 @@ export class AuthService {
   obtenerRol(): string | null {
     const sesion = this.obtenerSesion();
     if (!sesion || !sesion.rol) return null;
-    return sesion.rol.toUpperCase(); 
+    return sesion.rol.toUpperCase();
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -8,9 +8,11 @@ import { HttpClient } from '@angular/common/http';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './tecnico-ordenes-asignadas.html',
-  styleUrls: ['./tecnico-ordenes-asignadas.css']
+  styleUrls: ['./tecnico-ordenes-asignadas.css'],
 })
 export class TecnicoOrdenesAsignadas implements OnInit, OnDestroy {
+  private http = inject(HttpClient);
+  cdr = inject(ChangeDetectorRef);
 
   ordenes: any[] = [];
   cargando = true;
@@ -32,7 +34,7 @@ export class TecnicoOrdenesAsignadas implements OnInit, OnDestroy {
     'EN_REPARACION',
     'EN_PRUEBAS',
     'TERMINADO',
-    'ENTREGADO'
+    'ENTREGADO',
   ];
 
   /**
@@ -41,25 +43,17 @@ export class TecnicoOrdenesAsignadas implements OnInit, OnDestroy {
    * Los que requieren endpoint especial usan `endpoint`; si no, usan PUT /{id}.
    */
   private transiciones: Record<string, { valor: string; texto: string; endpoint?: string }[]> = {
-    'ASIGNADO': [
-      { valor: 'EN_PROCESO', texto: '🔍 Iniciar diagnóstico' }
+    ASIGNADO: [{ valor: 'EN_PROCESO', texto: '🔍 Iniciar diagnóstico' }],
+    EN_PROCESO: [{ valor: 'COTIZADO', texto: '💰 Enviar cotización' }],
+    COTIZACION_APROBADA: [{ valor: 'EN_REPARACION', texto: '🔧 Iniciar reparación' }],
+    EN_REPARACION: [
+      { valor: 'EN_PRUEBAS', texto: '🧪 Pasar a pruebas', endpoint: 'avanzar-pruebas' },
     ],
-    'EN_PROCESO': [
-      { valor: 'COTIZADO', texto: '💰 Enviar cotización' }
-    ],
-    'COTIZACION_APROBADA': [
-      { valor: 'EN_REPARACION', texto: '🔧 Iniciar reparación' }
-    ],
-    'EN_REPARACION': [
-      { valor: 'EN_PRUEBAS', texto: '🧪 Pasar a pruebas', endpoint: 'avanzar-pruebas' }
-    ],
-    'EN_PRUEBAS': [
+    EN_PRUEBAS: [
       { valor: 'TERMINADO', texto: '✅ Terminar (pruebas OK)', endpoint: 'terminar' },
-      { valor: 'EN_REPARACION', texto: '↩️ Volver a reparación', endpoint: 'volver-reparacion' }
-    ]
+      { valor: 'EN_REPARACION', texto: '↩️ Volver a reparación', endpoint: 'volver-reparacion' },
+    ],
   };
-
-  constructor(private http: HttpClient, public cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     try {
@@ -83,7 +77,7 @@ export class TecnicoOrdenesAsignadas implements OnInit, OnDestroy {
     if (this.intervaloRefresco) clearInterval(this.intervaloRefresco);
   }
 
-  cargarOrdenes(silencioso: boolean = false): void {
+  cargarOrdenes(silencioso = false): void {
     if (!silencioso) {
       this.cargando = true;
       this.error = '';
@@ -92,7 +86,7 @@ export class TecnicoOrdenesAsignadas implements OnInit, OnDestroy {
 
     this.http.get<any[]>(`${this.apiUrl}/ordenes-trabajo`).subscribe({
       next: (data) => {
-        this.ordenes = (data || []).filter(o => {
+        this.ordenes = (data || []).filter((o) => {
           const idTec = Number(o.idTecnico || o.id_tecnico || 0);
           return idTec === this.idTecnico && this.estadosVisibles.includes(o.estado);
         });
@@ -104,7 +98,7 @@ export class TecnicoOrdenesAsignadas implements OnInit, OnDestroy {
         if (!silencioso) this.error = '❌ Error al cargar las órdenes. Verifique la conexión.';
         this.cargando = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -135,30 +129,37 @@ export class TecnicoOrdenesAsignadas implements OnInit, OnDestroy {
         this.cargarOrdenes(true);
         this.exito = `✅ OT-${id} actualizada a "${opcion.texto}"`;
         this.cdr.detectChanges();
-        setTimeout(() => { this.exito = ''; this.cdr.detectChanges(); }, 3000);
+        setTimeout(() => {
+          this.exito = '';
+          this.cdr.detectChanges();
+        }, 3000);
       },
       error: (err) => {
         console.error('❌ Error al cambiar estado:', err);
         this.error = `❌ No se pudo cambiar el estado: ${err.error?.error || err.message}`;
         this.cdr.detectChanges();
         this.cargarOrdenes(true);
-      }
+      },
     });
   }
 
   get ordenesFiltradas(): any[] {
     let resultado = this.ordenes;
     if (this.filtroEstado !== 'TODOS') {
-      resultado = resultado.filter(o => o.estado === this.filtroEstado);
+      resultado = resultado.filter((o) => o.estado === this.filtroEstado);
     }
     if (this.busqueda?.trim()) {
       const q = this.busqueda.toLowerCase().trim();
-      resultado = resultado.filter(o => {
+      resultado = resultado.filter((o) => {
         const ticket = `OT-${o.idOrden}`.toLowerCase();
         const cliente = (o.nombreCliente || o.cliente || '').toLowerCase();
         const equipo = `${o.marca || ''} ${o.modelo || ''}`.toLowerCase();
-        return ticket.includes(q) || cliente.includes(q) || equipo.includes(q) ||
-               String(o.idOrden).includes(q);
+        return (
+          ticket.includes(q) ||
+          cliente.includes(q) ||
+          equipo.includes(q) ||
+          String(o.idOrden).includes(q)
+        );
       });
     }
     return resultado;
@@ -166,30 +167,30 @@ export class TecnicoOrdenesAsignadas implements OnInit, OnDestroy {
 
   textoEstado(estado: string): string {
     const e: Record<string, string> = {
-      'ASIGNADO': '👤 Asignado',
-      'EN_PROCESO': '🔍 En diagnóstico',
-      'COTIZADO': '💰 Cotizado',
-      'COTIZACION_RECHAZADA_ADMIN': '❌ Cotización rechazada',
-      'COTIZACION_APROBADA': '✅ Cotización aprobada',
-      'EN_REPARACION': '🔧 En reparación',
-      'EN_PRUEBAS': '🧪 En pruebas',
-      'TERMINADO': '✅ Terminado',
-      'ENTREGADO': '📦 Entregado'
+      ASIGNADO: '👤 Asignado',
+      EN_PROCESO: '🔍 En diagnóstico',
+      COTIZADO: '💰 Cotizado',
+      COTIZACION_RECHAZADA_ADMIN: '❌ Cotización rechazada',
+      COTIZACION_APROBADA: '✅ Cotización aprobada',
+      EN_REPARACION: '🔧 En reparación',
+      EN_PRUEBAS: '🧪 En pruebas',
+      TERMINADO: '✅ Terminado',
+      ENTREGADO: '📦 Entregado',
     };
     return e[estado] || estado;
   }
 
   claseEstado(estado: string): string {
     const c: Record<string, string> = {
-      'ASIGNADO': 'en-proceso',
-      'EN_PROCESO': 'en-proceso',
-      'COTIZADO': 'pendiente',
-      'COTIZACION_RECHAZADA_ADMIN': 'pendiente',
-      'COTIZACION_APROBADA': 'en-proceso',
-      'EN_REPARACION': 'en-proceso',
-      'EN_PRUEBAS': 'en-proceso',
-      'TERMINADO': 'terminado',
-      'ENTREGADO': 'terminado'
+      ASIGNADO: 'en-proceso',
+      EN_PROCESO: 'en-proceso',
+      COTIZADO: 'pendiente',
+      COTIZACION_RECHAZADA_ADMIN: 'pendiente',
+      COTIZACION_APROBADA: 'en-proceso',
+      EN_REPARACION: 'en-proceso',
+      EN_PRUEBAS: 'en-proceso',
+      TERMINADO: 'terminado',
+      ENTREGADO: 'terminado',
     };
     return c[estado] || 'pendiente';
   }
@@ -200,8 +201,14 @@ export class TecnicoOrdenesAsignadas implements OnInit, OnDestroy {
     try {
       const fecha = new Date(fechaRaw);
       if (isNaN(fecha.getTime())) return fechaRaw;
-      return fecha.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    } catch { return fechaRaw; }
+      return fecha.toLocaleDateString('es-PE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+    } catch {
+      return fechaRaw;
+    }
   }
 
   recargar(): void {

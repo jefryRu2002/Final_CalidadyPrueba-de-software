@@ -1,5 +1,5 @@
-import { Component, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -7,36 +7,40 @@ import { HttpClient } from '@angular/common/http';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './login.html',
-  styleUrls: ['./login.css']
+  styleUrls: ['./login.css'],
 })
 export class Login implements OnDestroy {
-  usuario: string = '';
-  contrasena: string = '';
-  cargando: boolean = false;
-  errorLogin: string = '';
-  cuentaCreada: boolean = false;
-  cuentaBloqueada: boolean = false;
+  private router = inject(Router);
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
 
-  mostrarOlvido: boolean = false;
-  correoRecuperacion: string = '';
-  enviandoCorreo: boolean = false;
-  correoEnviado: boolean = false;
-  errorRecuperacion: string = '';
+  usuario = '';
+  contrasena = '';
+  cargando = false;
+  errorLogin = '';
+  cuentaCreada = false;
+  cuentaBloqueada = false;
 
-  mostrarRegistro: boolean = false;
-  dni: string = '';
-  nombres: string = '';
-  apellidos: string = '';
-  correo: string = '';
-  telefono: string = '';
-  fechaNacimiento: string = '';
-  contrasenaRegistro: string = '';
-  confirmarContrasena: string = '';
-  errorRegistro: string = '';
-  buscandoDni: boolean = false;
-  registrando: boolean = false;
+  mostrarOlvido = false;
+  correoRecuperacion = '';
+  enviandoCorreo = false;
+  correoEnviado = false;
+  errorRecuperacion = '';
+
+  mostrarRegistro = false;
+  dni = '';
+  nombres = '';
+  apellidos = '';
+  correo = '';
+  telefono = '';
+  fechaNacimiento = '';
+  contrasenaRegistro = '';
+  confirmarContrasena = '';
+  errorRegistro = '';
+  buscandoDni = false;
+  registrando = false;
 
   private timeoutErrorLogin: any;
   private timeoutErrorRegistro: any;
@@ -44,12 +48,6 @@ export class Login implements OnDestroy {
   private timeoutCuentaCreada: any;
 
   private apiUrl = 'http://localhost:8080/api';
-
-  constructor(
-    private router: Router,
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef
-  ) {}
 
   ngOnDestroy(): void {
     if (this.timeoutErrorLogin) clearTimeout(this.timeoutErrorLogin);
@@ -155,9 +153,7 @@ export class Login implements OnDestroy {
       this.mostrarErrorRegistro('La fecha de nacimiento no puede ser futura');
       return false;
     }
-    const edad = Math.floor(
-      (hoy.getTime() - fecha.getTime()) / (365.25 * 24 * 60 * 60 * 1000)
-    );
+    const edad = Math.floor((hoy.getTime() - fecha.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
     if (edad < 18) {
       this.mostrarErrorRegistro('Debes ser mayor de edad para registrarte');
       return false;
@@ -199,20 +195,22 @@ export class Login implements OnDestroy {
     this.cuentaBloqueada = false;
     this.cdr.detectChanges();
 
-    this.http.post(`${this.apiUrl}/auth/login`, {
-      usuario: this.usuario.trim(),
-      contrasena: this.contrasena
-    }).subscribe({
-      next: (resp: any) => {
-        this.limpiarIntentos(this.usuario);
-        this.guardarSesionYRedirigir(resp);
-      },
-      error: (err) => {
-        this.cargando = false;
-        this.cdr.detectChanges();
-        this.manejarErrorLogin(err);
-      }
-    });
+    this.http
+      .post(`${this.apiUrl}/auth/login`, {
+        usuario: this.usuario.trim(),
+        contrasena: this.contrasena,
+      })
+      .subscribe({
+        next: (resp: any) => {
+          this.limpiarIntentos(this.usuario);
+          this.guardarSesionYRedirigir(resp);
+        },
+        error: (err) => {
+          this.cargando = false;
+          this.cdr.detectChanges();
+          this.manejarErrorLogin(err);
+        },
+      });
   }
 
   private guardarSesionYRedirigir(resp: any) {
@@ -229,7 +227,7 @@ export class Login implements OnDestroy {
       correo: resp.correo || this.usuario,
       telefono: resp.telefono || '',
       dni: resp.dni || '',
-      rol: resp.rol?.toUpperCase() || 'CLIENTE'
+      rol: resp.rol?.toUpperCase() || 'CLIENTE',
     };
 
     localStorage.setItem('usuario', JSON.stringify(usuarioData));
@@ -268,7 +266,9 @@ export class Login implements OnDestroy {
 
     // 5. Error 500 real (servidor caído, no cuenta intento)
     if (err.status === 500) {
-      this.mostrarErrorLogin('Ocurrió un error inesperado en el servidor. Por favor, intenta más tarde.');
+      this.mostrarErrorLogin(
+        'Ocurrió un error inesperado en el servidor. Por favor, intenta más tarde.',
+      );
       return;
     }
 
@@ -350,24 +350,30 @@ export class Login implements OnDestroy {
     this.errorRecuperacion = '';
     this.cdr.detectChanges();
 
-    this.http.post(`${this.apiUrl}/auth/olvide-contrasena`, {
-      correo: this.correoRecuperacion.trim()
-    }).subscribe({
-      next: () => {
-        this.enviandoCorreo = false;
-        this.correoEnviado = true;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.enviandoCorreo = false;
-        if (err.status === 500) {
-          this.errorRecuperacion = 'No se pudo enviar el correo. Verifica que el correo esté registrado.';
-        } else {
-          this.errorRecuperacion = err.error?.message || err.error?.error || 'No se pudo enviar el correo. Intenta de nuevo.';
-        }
-        this.cdr.detectChanges();
-      }
-    });
+    this.http
+      .post(`${this.apiUrl}/auth/olvide-contrasena`, {
+        correo: this.correoRecuperacion.trim(),
+      })
+      .subscribe({
+        next: () => {
+          this.enviandoCorreo = false;
+          this.correoEnviado = true;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.enviandoCorreo = false;
+          if (err.status === 500) {
+            this.errorRecuperacion =
+              'No se pudo enviar el correo. Verifica que el correo esté registrado.';
+          } else {
+            this.errorRecuperacion =
+              err.error?.message ||
+              err.error?.error ||
+              'No se pudo enviar el correo. Intenta de nuevo.';
+          }
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   // ==================== REGISTRO ====================
@@ -422,7 +428,8 @@ export class Login implements OnDestroy {
           this.nombres = data.nombres || data.nombre || '';
           const paterno = data.apellidoPaterno || data.apellido_paterno || data.paterno || '';
           const materno = data.apellidoMaterno || data.apellido_materno || data.materno || '';
-          this.apellidos = (paterno + ' ' + materno).trim() || data.apellidos || data.apellido || '';
+          this.apellidos =
+            (paterno + ' ' + materno).trim() || data.apellidos || data.apellido || '';
           this.fechaNacimiento = data.fechaNacimiento || data.fecha_nacimiento || '';
         }
         this.buscandoDni = false;
@@ -431,7 +438,7 @@ export class Login implements OnDestroy {
       error: () => {
         this.buscandoDni = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -480,7 +487,7 @@ export class Login implements OnDestroy {
       telefono: this.telefono.trim(),
       usuario: this.correo.trim().toLowerCase(),
       contrasena: this.contrasenaRegistro,
-      fechaNacimiento: this.fechaNacimiento
+      fechaNacimiento: this.fechaNacimiento,
     };
 
     this.http.post(`${this.apiUrl}/auth/register`, body).subscribe({
@@ -500,19 +507,23 @@ export class Login implements OnDestroy {
       error: (err) => {
         this.registrando = false;
         this.manejarErrorRegistro(err);
-      }
+      },
     });
   }
 
   private manejarErrorRegistro(err: any) {
     if (err.status === 500) {
-      this.mostrarErrorRegistro('Ocurrió un error inesperado en el servidor. Por favor, intenta de nuevo.');
+      this.mostrarErrorRegistro(
+        'Ocurrió un error inesperado en el servidor. Por favor, intenta de nuevo.',
+      );
       return;
     }
 
     switch (err.status) {
       case 409:
-        this.mostrarErrorRegistro(err.error?.message || err.error?.error || 'El correo ya está registrado');
+        this.mostrarErrorRegistro(
+          err.error?.message || err.error?.error || 'El correo ya está registrado',
+        );
         break;
       case 400:
         this.mostrarErrorRegistro(err.error?.message || err.error?.error || 'Datos inválidos');
@@ -521,7 +532,9 @@ export class Login implements OnDestroy {
         this.mostrarErrorRegistro('No se pudo conectar al servidor');
         break;
       default:
-        this.mostrarErrorRegistro(err.error?.message || err.error?.error || 'Error al crear la cuenta');
+        this.mostrarErrorRegistro(
+          err.error?.message || err.error?.error || 'Error al crear la cuenta',
+        );
         break;
     }
   }

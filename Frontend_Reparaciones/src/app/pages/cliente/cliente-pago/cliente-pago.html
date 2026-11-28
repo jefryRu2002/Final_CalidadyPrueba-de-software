@@ -33,7 +33,7 @@
 
     <div class="pagos-lista">
         @for (pago of (pestanaActiva === 'pendientes' ? pagosPendientes : pagosHistorial); track pago.id) {
-            <div class="pago-item" [class.pagado]="pago.estado !== 'Pendiente'" (click)="pago.estado === 'Pendiente' && seleccionarPago(pago)">
+            <div class="pago-item" role="button" [attr.aria-disabled]="pago.estado !== 'Pendiente'" [tabindex]="pago.estado === 'Pendiente' ? 0 : -1" [class.pagado]="pago.estado !== 'Pendiente'" (click)="pago.estado === 'Pendiente' && seleccionarPago(pago)" (keydown.enter)="pago.estado === 'Pendiente' && seleccionarPago(pago)" (keydown.space)="$event.preventDefault(); pago.estado === 'Pendiente' && seleccionarPago(pago)">
                 <div class="pago-info">
                     <span class="ticket-badge">{{ pago.ticket }}</span>
                     <div>
@@ -55,8 +55,8 @@
     </div>
 
     @if (pagoSeleccionado) {
-        <div class="modal-overlay" (click)="cerrarModal()">
-            <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-overlay" tabindex="0" (keydown.escape)="cerrarModal()" (click)="$event.target === $event.currentTarget && cerrarModal()">
+            <div class="modal">
                 <div class="modal-header">
                     <h2>Realizar pago — {{ pagoSeleccionado.ticket }}</h2>
                     <button class="btn-cerrar" (click)="cerrarModal()">✕</button>
@@ -83,8 +83,8 @@
                                 <p><strong>CCI:</strong> 00219400123456708910</p>
                             </div>
                         </div>
-                        <label>Banco desde el que transfiere</label>
-                        <select [(ngModel)]="datosTransferencia.banco">
+                        <label for="bancoTransferencia">Banco desde el que transfiere</label>
+                        <select id="bancoTransferencia" [(ngModel)]="datosTransferencia.banco">
                             <option value="">Selecciona banco</option>
                             <option value="bcp">BCP</option>
                             <option value="interbank">Interbank</option>
@@ -92,8 +92,8 @@
                             <option value="scotiabank">Scotiabank</option>
                         </select>
                         
-                        <label>N° de operación</label>
-                        <input type="text" placeholder="Ej: 12345678" [(ngModel)]="datosTransferencia.operacion">
+                        <label for="numeroOperacion">N° de operación</label>
+                        <input id="numeroOperacion" type="text" placeholder="Ej: 12345678" [(ngModel)]="datosTransferencia.operacion">
                         
                         <label class="file-label">
                             📎 Adjuntar comprobante
@@ -147,8 +147,8 @@
                             <p>✅ 4. Confirma el pago</p>
                         </div>
 
-                        <label>Número de teléfono (opcional)</label>
-                        <input type="tel" placeholder="Ej: 987654321" [(ngModel)]="datosBilletera.telefono">
+                        <label for="telefonoBilletera">Número de teléfono (opcional)</label>
+                        <input id="telefonoBilletera" type="tel" placeholder="Ej: 987654321" [(ngModel)]="datosBilletera.telefono">
                         
                         <label class="file-label">
                             📎 Adjuntar comprobante de pago
@@ -169,6 +169,6 @@
     }
 
     @if (pagoExitoso) { 
-        <div class="toast-exito" (click)="pagoExitoso = false">✅ ¡Pago realizado exitosamente!</div> 
+        <div class="toast-exito" role="button" tabindex="0" (click)="pagoExitoso = false" (keydown.enter)="pagoExitoso = false" (keydown.space)="$event.preventDefault(); pagoExitoso = false">✅ ¡Pago realizado exitosamente!</div>
     }
 </div>

@@ -45,8 +45,8 @@
 
 <!-- MODAL COTIZACIÓN -->
 @if (ordenSeleccionada) {
-    <div class="modal-overlay" (click)="cerrarModal()">
-        <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" tabindex="0" (keydown.escape)="cerrarModal()" (click)="$event.target === $event.currentTarget && cerrarModal()">
+        <div class="modal-card">
             <div class="modal-header"><h2>💰 Crear Cotización</h2><button class="btn-close" (click)="cerrarModal()">✕</button></div>
             <div class="modal-body">
                 <p class="modal-subtitulo">{{ ordenSeleccionada.ticket }} — {{ ordenSeleccionada.cliente }} — {{ ordenSeleccionada.equipo }}</p>
@@ -99,27 +99,6 @@
                     }
                 </div>
 
-                <!-- Trabajos -->
-                <div class="seccion">
-                    <h3>🛠️ Trabajos</h3>
-                    <div class="add-row">
-                        <input aria-label="Descripción del trabajo" [(ngModel)]="nuevoTrabajo.descripcion" placeholder="Descripción del trabajo" (keyup.enter)="agregarTrabajo()">
-                        <input aria-label="Costo del trabajo" [(ngModel)]="nuevoTrabajo.costo" type="number" placeholder="Costo S/" min="0.01" step="0.01" class="input-md" (keyup.enter)="agregarTrabajo()">
-                        <button class="btn-add" (click)="agregarTrabajo()">+</button>
-                    </div>
-                    @if (trabajos.length > 0) {
-                        <table class="tabla-items">
-                            <thead><tr><th>Trabajo</th><th class="text-right">Costo</th><th></th></tr></thead>
-                            <tbody>
-                                @for (t of trabajos; track $index) {
-                                    <tr><td>{{ t.descripcion }}</td><td class="text-right">{{ formatearMonto(t.costo) }}</td><td class="text-center"><button class="btn-del" (click)="quitarTrabajo($index)">✕</button></td></tr>
-                                }
-                            </tbody>
-                        </table>
-                        <div class="subtotal-seccion">Subtotal trabajos: <strong>{{ formatearMonto(totalTrabajos) }}</strong></div>
-                    }
-                </div>
-
                 <!-- Mano de obra -->
                 <div class="seccion">
                     <h3>👨‍🔧 Mano de Obra</h3>
@@ -127,16 +106,9 @@
                     @if (manoObra > 0) { <div class="subtotal-seccion">Mano de obra: <strong>{{ formatearMonto(manoObra) }}</strong></div> }
                 </div>
 
-                <!-- Notas -->
-                <div class="seccion">
-                    <h3>📝 Notas</h3>
-                    <textarea aria-label="Notas u observaciones" [(ngModel)]="notas" rows="2" placeholder="Observaciones..."></textarea>
-                </div>
-
                 <!-- Totales -->
                 <div class="totales-box">
                     <div class="total-row"><span>Repuestos</span><span>{{ formatearMonto(totalRepuestos) }}</span></div>
-                    <div class="total-row"><span>Trabajos</span><span>{{ formatearMonto(totalTrabajos) }}</span></div>
                     <div class="total-row"><span>Mano de Obra</span><span>{{ formatearMonto(manoObra) }}</span></div>
                     <div class="total-row total-final"><span>TOTAL</span><span>{{ formatearMonto(total) }}</span></div>
                 </div>

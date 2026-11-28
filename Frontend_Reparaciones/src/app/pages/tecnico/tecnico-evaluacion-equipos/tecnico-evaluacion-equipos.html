@@ -68,8 +68,8 @@
 
 <!-- MODAL DE EVALUACIÓN -->
 @if (ticketSeleccionado) {
-    <div class="modal-overlay" (click)="cerrarEvaluacion()">
-        <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" tabindex="0" (keydown.escape)="cerrarEvaluacion()" (click)="$event.target === $event.currentTarget && cerrarEvaluacion()">
+        <div class="modal-card">
             <div class="modal-header">
                 <h2>🔍 Evaluación Técnica</h2>
                 <button class="btn-close" (click)="cerrarEvaluacion()">✕</button>

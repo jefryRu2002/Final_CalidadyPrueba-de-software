@@ -16,7 +16,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   }
 
   // 3. Obtenemos los roles permitidos para esta ruta
-  const rolesPermitidos = route.data['roles'] as Array<string>;
+  const rolesPermitidos = route.data['roles'] as string[];
 
   // 4. Verificamos si el rol actual está permitido
   if (rolesPermitidos && rolesPermitidos.includes(rolActual)) {

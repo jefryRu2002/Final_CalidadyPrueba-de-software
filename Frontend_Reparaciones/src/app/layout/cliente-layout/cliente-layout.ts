@@ -1,19 +1,18 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+
 import { RouterModule, Router } from '@angular/router';
 
 @Component({
   selector: 'app-cliente-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './cliente-layout.html',
-  styleUrls: ['./cliente-layout.css']
+  styleUrls: ['./cliente-layout.css'],
 })
 export class ClienteLayout implements OnInit {
-  
-  nombreCliente = '';
+  private router = inject(Router);
 
-  constructor(private router: Router) {}
+  nombreCliente = '';
 
   ngOnInit(): void {
     this.cargarNombreCliente();

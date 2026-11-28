@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -8,15 +8,17 @@ import { HttpClient } from '@angular/common/http';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './administrador-usuarios.html',
-  styleUrls: ['./administrador-usuarios.css']
+  styleUrls: ['./administrador-usuarios.css'],
 })
 export class AdministradorUsuarios implements OnInit {
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
 
-  buscador: string = '';
+  buscador = '';
   mostrarOpciones = false;
   tipoUsuario = '';
   mostrarModal = false;
-  filtroRol: string = '';
+  filtroRol = '';
 
   usuarios: any[] = [];
   cargando = true;
@@ -35,15 +37,10 @@ export class AdministradorUsuarios implements OnInit {
     correo: '',
     telefono: '',
     dni: '',
-    contrasena: '123456'
+    contrasena: '123456',
   };
 
   private apiUrl = 'http://localhost:8080/api';
-
-  constructor(
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef
-  ) {}
 
   ngOnInit(): void {
     this.cargarUsuarios();
@@ -58,14 +55,14 @@ export class AdministradorUsuarios implements OnInit {
     this.http.get<any[]>(`${this.apiUrl}/admin/usuarios`).subscribe({
       next: (data) => {
         console.log('✅ Usuarios cargados:', data?.length);
-        
-        this.usuarios = (data || []).map(u => {
+
+        this.usuarios = (data || []).map((u) => {
           // LÓGICA DE BLOQUEO: Revisar si el Frontend registró 3 intentos fallidos
           const correoKey = (u.correo || '').toLowerCase().trim();
           const intentos = Number(localStorage.getItem(`coltech_intentos_${correoKey}`) || '0');
-          
+
           let estadoReal = u.estado === 1 ? 'Activo' : 'Inactivo';
-          
+
           // Si tiene 3 o más intentos en el navegador, lo mostramos como Bloqueado
           if (intentos >= 3) {
             estadoReal = 'Bloqueado';
@@ -79,7 +76,7 @@ export class AdministradorUsuarios implements OnInit {
             telefono: u.telefono || '',
             dni: u.dni || '',
             rol: u.rol || 'CLIENTE',
-            estado: estadoReal // Asignamos el estado calculado
+            estado: estadoReal, // Asignamos el estado calculado
           };
         });
 
@@ -92,19 +89,23 @@ export class AdministradorUsuarios implements OnInit {
         this.error = 'Error al cargar usuarios. ¿Backend corriendo?';
         this.cargando = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
   private actualizarContadores(): void {
-    this.totalClientes = this.usuarios.filter(u => u.rol === 'CLIENTE').length;
-    this.totalTecnicos = this.usuarios.filter(u => u.rol === 'TECNICO' || u.rol === 'TÉCNICO').length;
-    this.totalAdministradores = this.usuarios.filter(u => u.rol === 'ADMINISTRADOR' || u.rol === 'ADMIN').length;
+    this.totalClientes = this.usuarios.filter((u) => u.rol === 'CLIENTE').length;
+    this.totalTecnicos = this.usuarios.filter(
+      (u) => u.rol === 'TECNICO' || u.rol === 'TÉCNICO',
+    ).length;
+    this.totalAdministradores = this.usuarios.filter(
+      (u) => u.rol === 'ADMINISTRADOR' || u.rol === 'ADMIN',
+    ).length;
   }
 
   // ==================== ROLES ====================
   getRolTexto(rol: string): string {
-    switch(rol) {
+    switch (rol) {
       case 'ADMINISTRADOR':
       case 'ADMIN':
         return '🛡️ Administrador';
@@ -124,14 +125,15 @@ export class AdministradorUsuarios implements OnInit {
   }
 
   get usuariosFiltrados(): any[] {
-    return this.usuarios.filter(u => {
+    return this.usuarios.filter((u) => {
       const nombreCompleto = `${u.nombre} ${u.apellido}`.toLowerCase();
       const q = this.buscador.toLowerCase().trim();
-      const coincideBusqueda = !q || 
-        nombreCompleto.includes(q) || 
-        (u.correo || '').toLowerCase().includes(q) || 
+      const coincideBusqueda =
+        !q ||
+        nombreCompleto.includes(q) ||
+        (u.correo || '').toLowerCase().includes(q) ||
         (u.dni || '').includes(q);
-      
+
       const coincideRol = !this.filtroRol || u.rol === this.filtroRol;
       return coincideBusqueda && coincideRol;
     });
@@ -160,7 +162,7 @@ export class AdministradorUsuarios implements OnInit {
       correo: '',
       telefono: '',
       dni: '',
-      contrasena: '123456'
+      contrasena: '123456',
     };
     this.buscandoDni = false;
   }
@@ -186,15 +188,15 @@ export class AdministradorUsuarios implements OnInit {
           this.nuevoUsuario.nombre = data.nombres || data.nombre || '';
           const apPat = data.apellidoPaterno || data.apellido_paterno || '';
           const apMat = data.apellidoMaterno || data.apellido_materno || '';
-          this.nuevoUsuario.apellido = (apPat || apMat) ? `${apPat} ${apMat}`.trim() : '';
+          this.nuevoUsuario.apellido = apPat || apMat ? `${apPat} ${apMat}`.trim() : '';
         }
         this.buscandoDni = false;
         this.cdr.detectChanges();
       },
-      error: () => { 
+      error: () => {
         this.buscandoDni = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -222,7 +224,7 @@ export class AdministradorUsuarios implements OnInit {
       telefono: this.nuevoUsuario.telefono || '',
       usuario: this.nuevoUsuario.correo.trim(),
       contrasena: this.nuevoUsuario.contrasena,
-      rol: rol
+      rol: rol,
     };
 
     console.log('💾 Creando usuario:', datos);
@@ -239,12 +241,12 @@ export class AdministradorUsuarios implements OnInit {
         console.error('❌ Error:', err);
         this.guardandoUsuario = false;
         this.cdr.detectChanges();
-        
+
         let mensaje = 'No se pudo crear el usuario';
         if (err.status === 409) mensaje = 'El correo o DNI ya está registrado';
         else if (err.error?.error) mensaje = err.error.error;
         alert('❌ ' + mensaje);
-      }
+      },
     });
   }
 
@@ -254,7 +256,7 @@ export class AdministradorUsuarios implements OnInit {
     if (usuario.estado === 'Bloqueado') {
       const correoKey = (usuario.correo || '').toLowerCase().trim();
       localStorage.removeItem(`coltech_intentos_${correoKey}`);
-      
+
       usuario.estado = 'Activo'; // Actualizamos la vista
       this.cdr.detectChanges();
       alert('🔓 Cuenta desbloqueada correctamente. El usuario ya puede iniciar sesión.');
@@ -263,22 +265,24 @@ export class AdministradorUsuarios implements OnInit {
 
     const nuevoEstado = usuario.estado === 'Activo' ? 0 : 1;
     const accion = nuevoEstado === 1 ? 'activar' : 'desactivar';
-    
+
     if (!confirm(`¿${accion} a ${usuario.nombre} ${usuario.apellido}?`)) return;
 
-    this.http.put(`${this.apiUrl}/admin/usuarios/${usuario.id}/estado`, {
-      estado: nuevoEstado
-    }).subscribe({
-      next: () => {
-        usuario.estado = nuevoEstado === 1 ? 'Activo' : 'Inactivo';
-        this.actualizarContadores();
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('❌ Error:', err);
-        alert('Error al cambiar estado');
-      }
-    });
+    this.http
+      .put(`${this.apiUrl}/admin/usuarios/${usuario.id}/estado`, {
+        estado: nuevoEstado,
+      })
+      .subscribe({
+        next: () => {
+          usuario.estado = nuevoEstado === 1 ? 'Activo' : 'Inactivo';
+          this.actualizarContadores();
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('❌ Error:', err);
+          alert('Error al cambiar estado');
+        },
+      });
   }
 
   // ==================== ELIMINAR USUARIO ====================
@@ -287,14 +291,14 @@ export class AdministradorUsuarios implements OnInit {
 
     this.http.delete(`${this.apiUrl}/personas/${usuario.id}`).subscribe({
       next: () => {
-        this.usuarios = this.usuarios.filter(u => u.id !== usuario.id);
+        this.usuarios = this.usuarios.filter((u) => u.id !== usuario.id);
         this.actualizarContadores();
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('❌ Error:', err);
         alert('Error al eliminar');
-      }
+      },
     });
   }
 }

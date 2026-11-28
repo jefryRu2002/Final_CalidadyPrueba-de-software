@@ -1,5 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+
 import { HttpClient } from '@angular/common/http';
 
 interface DevolucionEquipo {
@@ -17,40 +17,37 @@ interface DevolucionEquipo {
 @Component({
   selector: 'app-devoluciones',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './administrador-devoluciones.html',
-  styleUrls: ['./administrador-devoluciones.css']
+  styleUrls: ['./administrador-devoluciones.css'],
 })
 export class AdministradorDevoluciones implements OnInit {
-  
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
+
   equiposIrreparables: DevolucionEquipo[] = [];
   cargando = false;
   error = '';
   exito = '';
-  
+
   mostrarModalConfirmacion = false;
   clienteSeleccionado: DevolucionEquipo | null = null;
-  
+
   mostrarToast = false;
   mensajeToast = '';
-  
-  private apiUrl = 'http://localhost:8080/api';
 
-  constructor(
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef
-  ) {}
+  private apiUrl = 'http://localhost:8080/api';
 
   ngOnInit(): void {
     this.cargarDevoluciones();
   }
 
   get pendientesNotificar(): number {
-    return this.equiposIrreparables.filter(e => e.estadoNotificacion === 'Pendiente').length;
+    return this.equiposIrreparables.filter((e) => e.estadoNotificacion === 'Pendiente').length;
   }
 
   get notificados(): number {
-    return this.equiposIrreparables.filter(e => e.estadoNotificacion === 'Notificado').length;
+    return this.equiposIrreparables.filter((e) => e.estadoNotificacion === 'Notificado').length;
   }
 
   cargarDevoluciones(): void {
@@ -61,11 +58,9 @@ export class AdministradorDevoluciones implements OnInit {
     this.http.get<any[]>(`${this.apiUrl}/ordenes-trabajo`).subscribe({
       next: (data) => {
         // Solo órdenes con estado DEVUELTO
-        const devoluciones = (data || []).filter(ot => 
-          ot.estado === 'DEVUELTO'
-        );
+        const devoluciones = (data || []).filter((ot) => ot.estado === 'DEVUELTO');
 
-        this.equiposIrreparables = devoluciones.map(ot => ({
+        this.equiposIrreparables = devoluciones.map((ot) => ({
           id: ot.idOrden || 0,
           ticket: 'OT-' + (ot.idOrden || 0),
           cliente: ot.nombreCliente || ot.cliente || 'Sin cliente',
@@ -74,7 +69,7 @@ export class AdministradorDevoluciones implements OnInit {
           tecnico: ot.nombreTecnico || 'Sin técnico',
           motivoFalla: ot.descripcion || ot.descripcionFalla || 'Rechazado por el cliente',
           fechaDiagnostico: ot.fechaFin || ot.fechaInicio || '',
-          estadoNotificacion: this.mapearEstadoDevolucion(ot.estado)
+          estadoNotificacion: this.mapearEstadoDevolucion(ot.estado),
         }));
 
         this.cargando = false;
@@ -85,7 +80,7 @@ export class AdministradorDevoluciones implements OnInit {
         this.error = '❌ No se pudieron cargar las devoluciones';
         this.cargando = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -96,7 +91,7 @@ export class AdministradorDevoluciones implements OnInit {
 
   // ==================== NOTIFICAR CLIENTE ====================
   notificarCliente(id: number): void {
-    this.clienteSeleccionado = this.equiposIrreparables.find(e => e.id === id) || null;
+    this.clienteSeleccionado = this.equiposIrreparables.find((e) => e.id === id) || null;
     if (this.clienteSeleccionado) {
       this.mostrarModalConfirmacion = true;
     }
@@ -104,9 +99,9 @@ export class AdministradorDevoluciones implements OnInit {
 
   confirmarNotificacion(): void {
     if (!this.clienteSeleccionado) return;
-    
+
     const equipo = this.clienteSeleccionado;
-    
+
     // Aquí podrías llamar a un endpoint para enviar correo
     // Por ahora solo simulamos
     equipo.estadoNotificacion = 'Notificado';
@@ -128,7 +123,9 @@ export class AdministradorDevoluciones implements OnInit {
       const fechaObj = new Date(fecha);
       if (isNaN(fechaObj.getTime())) return fecha;
       return fechaObj.toLocaleDateString('es-PE', {
-        day: '2-digit', month: '2-digit', year: 'numeric'
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
       });
     } catch {
       return fecha;

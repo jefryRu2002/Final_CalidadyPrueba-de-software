@@ -48,7 +48,7 @@ describe('RecuperarContrasena', () => {
   });
 
   it('debe mostrar alerta si las contraseñas no coinciden', () => {
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
     component.contrasena = 'abc';
     component.confirmar = 'xyz';
     component.restablecer();

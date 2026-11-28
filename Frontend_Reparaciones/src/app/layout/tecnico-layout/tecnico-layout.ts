@@ -1,31 +1,29 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+
 import { RouterModule, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-tecnico-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './tecnico-layout.html',
-  styleUrls: ['./tecnico-layout.css']
+  styleUrls: ['./tecnico-layout.css'],
 })
 export class TecnicoLayout implements OnInit {
-  nombreTecnico = 'Técnico';
-  tecnicoId: string = '';
-  cargando = false; // Iniciar como false para evitar pantalla de carga
-  
-  private apiUrl = 'http://localhost:8080/api';
+  private http = inject(HttpClient);
+  private router = inject(Router);
 
-  constructor(
-    private http: HttpClient,
-    private router: Router
-  ) {}
+  nombreTecnico = 'Técnico';
+  tecnicoId = '';
+  cargando = false; // Iniciar como false para evitar pantalla de carga
+
+  private apiUrl = 'http://localhost:8080/api';
 
   ngOnInit(): void {
     // Primero intentar cargar desde localStorage (rápido)
     this.cargarDesdeLocalStorage();
-    
+
     // Luego intentar cargar desde la API (puede fallar sin problema)
     setTimeout(() => {
       this.cargarDatosTecnico();
@@ -37,13 +35,13 @@ export class TecnicoLayout implements OnInit {
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
       const tecnicoActual = JSON.parse(localStorage.getItem('tecnicoActual') || '{}');
-      
+
       console.log('📦 Datos en localStorage:', { usuario, currentUser, tecnicoActual });
-      
+
       // Intentar obtener nombre de diferentes fuentes
       let nombre = '';
       let apellido = '';
-      
+
       if (usuario.nombre) {
         nombre = usuario.nombre;
         apellido = usuario.apellido || '';
@@ -57,7 +55,7 @@ export class TecnicoLayout implements OnInit {
         apellido = tecnicoActual.apellido || '';
         this.tecnicoId = tecnicoActual.idPersona || tecnicoActual.id || '';
       }
-      
+
       if (nombre) {
         this.nombreTecnico = `${nombre} ${apellido}`.trim();
         console.log('✅ Nombre desde localStorage:', this.nombreTecnico);
@@ -74,13 +72,14 @@ export class TecnicoLayout implements OnInit {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     const tecnicoActual = JSON.parse(localStorage.getItem('tecnicoActual') || '{}');
-    
-    this.tecnicoId = usuario.idPersona || 
-                     currentUser.idPersona || 
-                     currentUser.id || 
-                     tecnicoActual.idPersona || 
-                     tecnicoActual.id || 
-                     '';
+
+    this.tecnicoId =
+      usuario.idPersona ||
+      currentUser.idPersona ||
+      currentUser.id ||
+      tecnicoActual.idPersona ||
+      tecnicoActual.id ||
+      '';
 
     console.log('🔍 Intentando cargar desde API. ID:', this.tecnicoId);
 
@@ -95,15 +94,15 @@ export class TecnicoLayout implements OnInit {
 
   private cargarDesdeApi(endpoint: string): void {
     console.log('🌐 Llamando a:', `${this.apiUrl}${endpoint}`);
-    
+
     this.http.get<any>(`${this.apiUrl}${endpoint}`).subscribe({
       next: (data) => {
         console.log('✅ Respuesta de la API:', data);
-        
+
         // Intentar obtener nombre de diferentes estructuras
         let nombre = '';
         let apellido = '';
-        
+
         if (data.persona) {
           nombre = data.persona.nombre || data.persona.nombres || '';
           apellido = data.persona.apellido || data.persona.apellidos || '';
@@ -114,7 +113,7 @@ export class TecnicoLayout implements OnInit {
           nombre = data.nombres;
           apellido = data.apellidos || '';
         }
-        
+
         if (nombre) {
           this.nombreTecnico = `${nombre} ${apellido}`.trim();
           console.log('✅ Nombre actualizado desde API:', this.nombreTecnico);
@@ -123,7 +122,7 @@ export class TecnicoLayout implements OnInit {
       error: (err) => {
         console.warn('⚠️ No se pudo cargar desde API:', err.status, err.message);
         // No hacemos nada, ya tenemos el nombre desde localStorage
-      }
+      },
     });
   }
 
@@ -133,7 +132,7 @@ export class TecnicoLayout implements OnInit {
     localStorage.removeItem('tecnicoActual');
     localStorage.removeItem('clienteActual');
     localStorage.removeItem('token');
-    
+
     this.router.navigate(['/login']);
   }
 }

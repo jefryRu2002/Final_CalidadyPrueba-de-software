@@ -100,8 +100,8 @@
 
 <!-- MODAL CREAR ORDEN -->
 @if (mostrarModalOrden) {
-    <div class="modal-overlay" (click)="cerrarModalOrden()">
-        <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" tabindex="0" (keydown.escape)="cerrarModalOrden()" (click)="$event.target === $event.currentTarget && cerrarModalOrden()">
+        <div class="modal-card">
             <div class="modal-header">
                 <h3>📋 Crear Orden de Trabajo</h3>
                 <button class="btn-close" (click)="cerrarModalOrden()">✕</button>
@@ -138,8 +138,8 @@
             }
             <div class="formulario-orden">
                 <div class="form-group form-group-full">
-                    <label>🔧 Técnico Asignado</label>
-                    <select [(ngModel)]="orden.id_tecnico">
+                    <label for="tecnicoOrden">🔧 Técnico Asignado</label>
+                    <select id="tecnicoOrden" [(ngModel)]="orden.id_tecnico">
                         <option value="" disabled selected>Seleccione un técnico...</option>
                         @for (tecnico of tecnicos; track tecnico.id) {
                             <option [value]="tecnico.id">👨‍🔧 {{ tecnico.nombreCompleto }}</option>

@@ -134,8 +134,8 @@
 
     <!-- Modal Editar -->
     @if (mostrarModalEditar) {
-        <div class="modal-overlay" (click)="cerrarModalEditar()">
-            <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-overlay" tabindex="0" (keydown.escape)="cerrarModalEditar()" (click)="$event.target === $event.currentTarget && cerrarModalEditar()">
+            <div class="modal-card">
                 <div class="modal-header">
                     <h2>✏️ Editar {{ ordenSeleccionada.id }}</h2>
                     <button class="btn-cerrar" (click)="cerrarModalEditar()">✕</button>
@@ -163,8 +163,8 @@
                     <div class="edit-section">
                         <h3>⚙️ Configuración</h3>
                         <div class="form-group">
-                            <label>👨‍🔧 Técnico Asignado</label>
-                            <select [(ngModel)]="ordenSeleccionada.idTecnico">
+                            <label for="tecnicoAsignado">👨‍🔧 Técnico Asignado</label>
+                            <select id="tecnicoAsignado" [(ngModel)]="ordenSeleccionada.idTecnico">
                                 <option value="">No asignado</option>
                                 @for (t of tecnicos; track t.id) {
                                     <option [value]="t.id">{{ t.nombre }}</option>
@@ -172,8 +172,8 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>📊 Estado</label>
-                            <select [(ngModel)]="ordenSeleccionada.estado">
+                            <label for="estadoOrden">📊 Estado</label>
+                            <select id="estadoOrden" [(ngModel)]="ordenSeleccionada.estado">
                                 <option value="ASIGNADO">👤 Asignado</option>
                                 <option value="EN_PROCESO">🔍 En diagnóstico</option>
                                 <option value="COTIZADO">💰 Cotizado</option>

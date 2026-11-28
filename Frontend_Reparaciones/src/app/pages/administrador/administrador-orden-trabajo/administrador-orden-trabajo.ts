@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -8,9 +8,11 @@ import { HttpClient } from '@angular/common/http';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './administrador-orden-trabajo.html',
-  styleUrls: ['./administrador-orden-trabajo.css']
+  styleUrls: ['./administrador-orden-trabajo.css'],
 })
 export class AdministradorOrdenTrabajo implements OnInit, OnDestroy {
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
 
   estadoFiltro = 'Todos';
   busquedaCliente = '';
@@ -36,13 +38,8 @@ export class AdministradorOrdenTrabajo implements OnInit, OnDestroy {
     'EN_PRUEBAS',
     'TERMINADO',
     'ENTREGADO',
-    'DEVUELTO'
+    'DEVUELTO',
   ];
-
-  constructor(
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef
-  ) {}
 
   ngOnInit() {
     this.cargarDatosIniciales();
@@ -78,13 +75,13 @@ export class AdministradorOrdenTrabajo implements OnInit, OnDestroy {
       },
       error: () => {
         this.cargarOrdenes(true);
-      }
+      },
     });
   }
 
   recargarTodo(): void {
     if (this.actualizando) return;
-    
+
     this.actualizando = true;
     this.error = '';
     this.exito = '';
@@ -96,17 +93,20 @@ export class AdministradorOrdenTrabajo implements OnInit, OnDestroy {
         this.actualizando = false;
         this.exito = '✅ Datos actualizados correctamente';
         this.cdr.detectChanges();
-        setTimeout(() => { this.exito = ''; this.cdr.detectChanges(); }, 3000);
+        setTimeout(() => {
+          this.exito = '';
+          this.cdr.detectChanges();
+        }, 3000);
       },
       error: () => {
         this.error = '❌ Error al actualizar. Verifique la conexión.';
         this.actualizando = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
-  cargarOrdenes(mostrarLoader: boolean = true): void {
+  cargarOrdenes(mostrarLoader = true): void {
     if (mostrarLoader) {
       this.cargando = true;
       this.error = '';
@@ -127,16 +127,18 @@ export class AdministradorOrdenTrabajo implements OnInit, OnDestroy {
           this.cargando = false;
         }
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
   procesarTecnicos(data: any[]): void {
-    this.tecnicos = data.map(t => {
-      let nombre = '';
+    this.tecnicos = data.map((t) => {
+      let nombre: string;
       if (t.persona && typeof t.persona === 'object') {
-        nombre = (t.persona.nombre || t.persona.nombres || '') + ' ' + 
-                 (t.persona.apellido || t.persona.apellidos || '');
+        nombre =
+          (t.persona.nombre || t.persona.nombres || '') +
+          ' ' +
+          (t.persona.apellido || t.persona.apellidos || '');
       } else if (t.nombreCompleto || t.nombre_completo) {
         nombre = t.nombreCompleto || t.nombre_completo;
       } else {
@@ -144,17 +146,15 @@ export class AdministradorOrdenTrabajo implements OnInit, OnDestroy {
       }
       return {
         id: t.idPersona || t.id_persona || t.id,
-        nombre: nombre.trim() || 'Técnico #' + (t.idPersona || t.id)
+        nombre: nombre.trim() || 'Técnico #' + (t.idPersona || t.id),
       };
     });
   }
 
   procesarOrdenes(data: any[]): void {
-    const ordenesFiltradas = (data || []).filter(ot => 
-      ot.estado && ot.estado !== 'PENDIENTE'
-    );
+    const ordenesFiltradas = (data || []).filter((ot) => ot.estado && ot.estado !== 'PENDIENTE');
 
-    this.ordenes = ordenesFiltradas.map(ot => {
+    this.ordenes = ordenesFiltradas.map((ot) => {
       let nombreCliente = ot.nombreCliente || ot.nombre_cliente || '';
       if (!nombreCliente) {
         nombreCliente = 'Cliente #' + (ot.idCliente || ot.idPersona || 'N/A');
@@ -167,8 +167,8 @@ export class AdministradorOrdenTrabajo implements OnInit, OnDestroy {
       const idTecnico = ot.idTecnico || ot.id_tecnico || '';
       let nombreTecnico = 'No asignado';
       if (idTecnico) {
-        const t = this.tecnicos.find(tec => tec.id == idTecnico);
-        nombreTecnico = t ? t.nombre : (ot.nombreTecnico || 'Técnico #' + idTecnico);
+        const t = this.tecnicos.find((tec) => tec.id == idTecnico);
+        nombreTecnico = t ? t.nombre : ot.nombreTecnico || 'Técnico #' + idTecnico;
       }
 
       return {
@@ -189,7 +189,7 @@ export class AdministradorOrdenTrabajo implements OnInit, OnDestroy {
         puedePagar: ot.puedePagar || false,
         notasTecnico: ot.notasTecnico || '',
         trabajosRealizados: ot.trabajosRealizados || [],
-        repuestosUsados: ot.repuestosUsados || []
+        repuestosUsados: ot.repuestosUsados || [],
       };
     });
 
@@ -198,32 +198,32 @@ export class AdministradorOrdenTrabajo implements OnInit, OnDestroy {
 
   getEstadoBadge(estado: string): string {
     const badges: Record<string, string> = {
-      'ASIGNADO': '👤 Asignado',
-      'EN_PROCESO': '🔍 En diagnóstico',
-      'COTIZADO': '💰 Cotizado',
-      'COTIZACION_RECHAZADA_ADMIN': '❌ Cotización rechazada',
-      'COTIZACION_APROBADA': '✅ Cotización aprobada',
-      'EN_REPARACION': '🔧 En reparación',
-      'EN_PRUEBAS': '🧪 En pruebas',
-      'TERMINADO': '✅ Terminado',
-      'ENTREGADO': '📦 Entregado',
-      'DEVUELTO': '↩️ Devuelto'
+      ASIGNADO: '👤 Asignado',
+      EN_PROCESO: '🔍 En diagnóstico',
+      COTIZADO: '💰 Cotizado',
+      COTIZACION_RECHAZADA_ADMIN: '❌ Cotización rechazada',
+      COTIZACION_APROBADA: '✅ Cotización aprobada',
+      EN_REPARACION: '🔧 En reparación',
+      EN_PRUEBAS: '🧪 En pruebas',
+      TERMINADO: '✅ Terminado',
+      ENTREGADO: '📦 Entregado',
+      DEVUELTO: '↩️ Devuelto',
     };
     return badges[estado] || estado;
   }
 
   getEstadoClass(estado: string): string {
     const clases: Record<string, string> = {
-      'ASIGNADO': 'proceso',
-      'EN_PROCESO': 'proceso',
-      'COTIZADO': 'pendiente',
-      'COTIZACION_RECHAZADA_ADMIN': 'cancelado',
-      'COTIZACION_APROBADA': 'terminado',
-      'EN_REPARACION': 'proceso',
-      'EN_PRUEBAS': 'proceso',
-      'TERMINADO': 'terminado',
-      'ENTREGADO': 'entregado',
-      'DEVUELTO': 'cancelado'
+      ASIGNADO: 'proceso',
+      EN_PROCESO: 'proceso',
+      COTIZADO: 'pendiente',
+      COTIZACION_RECHAZADA_ADMIN: 'cancelado',
+      COTIZACION_APROBADA: 'terminado',
+      EN_REPARACION: 'proceso',
+      EN_PRUEBAS: 'proceso',
+      TERMINADO: 'terminado',
+      ENTREGADO: 'entregado',
+      DEVUELTO: 'cancelado',
     };
     return clases[estado] || '';
   }
@@ -232,24 +232,25 @@ export class AdministradorOrdenTrabajo implements OnInit, OnDestroy {
     let f = this.ordenes;
     const q = this.busquedaCliente.toLowerCase().trim();
     if (q) {
-      f = f.filter(o => 
-        o.cliente.toLowerCase().includes(q) || 
-        o.id.toLowerCase().includes(q) || 
-        o.ticket.toLowerCase().includes(q) ||
-        o.tecnico.toLowerCase().includes(q) ||
-        o.descripcion.toLowerCase().includes(q)
+      f = f.filter(
+        (o) =>
+          o.cliente.toLowerCase().includes(q) ||
+          o.id.toLowerCase().includes(q) ||
+          o.ticket.toLowerCase().includes(q) ||
+          o.tecnico.toLowerCase().includes(q) ||
+          o.descripcion.toLowerCase().includes(q),
       );
     }
     if (this.estadoFiltro !== 'Todos') {
-      f = f.filter(o => o.estado === this.estadoFiltro);
+      f = f.filter((o) => o.estado === this.estadoFiltro);
     }
     return f;
   }
 
   abrirModalEditar(orden: any): void {
-    this.ordenSeleccionada = { 
+    this.ordenSeleccionada = {
       ...orden,
-      _teniaTecnico: !!orden.idTecnico
+      _teniaTecnico: !!orden.idTecnico,
     };
     this.mostrarModalEditar = true;
     this.cdr.detectChanges();
@@ -262,42 +263,55 @@ export class AdministradorOrdenTrabajo implements OnInit, OnDestroy {
 
   guardarCambios(): void {
     const datos: any = {
-      estado: this.ordenSeleccionada.estado
+      estado: this.ordenSeleccionada.estado,
     };
 
     if (this.ordenSeleccionada.idTecnico) {
       datos.idTecnico = this.ordenSeleccionada.idTecnico;
     }
 
-    this.http.put(`${this.apiUrl}/ordenes-trabajo/${this.ordenSeleccionada.idOrden}`, datos).subscribe({
-      next: () => {
-        this.exito = '✅ Cambios guardados correctamente';
-        this.cerrarModalEditar();
-        this.recargarTodo();
-        this.cdr.detectChanges();
-        setTimeout(() => { this.exito = ''; this.cdr.detectChanges(); }, 3000);
-      },
-      error: (err) => {
-        this.error = '❌ Error: ' + (err.error?.error || 'No se pudo actualizar');
-        this.cdr.detectChanges();
-      }
-    });
+    this.http
+      .put(`${this.apiUrl}/ordenes-trabajo/${this.ordenSeleccionada.idOrden}`, datos)
+      .subscribe({
+        next: () => {
+          this.exito = '✅ Cambios guardados correctamente';
+          this.cerrarModalEditar();
+          this.recargarTodo();
+          this.cdr.detectChanges();
+          setTimeout(() => {
+            this.exito = '';
+            this.cdr.detectChanges();
+          }, 3000);
+        },
+        error: (err) => {
+          this.error = '❌ Error: ' + (err.error?.error || 'No se pudo actualizar');
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   eliminarOrden(orden: any): void {
-    if (!confirm(`¿Estás seguro de eliminar la orden ${orden.id}?\n\nEsta acción no se puede deshacer.`)) return;
-    
+    if (
+      !confirm(
+        `¿Estás seguro de eliminar la orden ${orden.id}?\n\nEsta acción no se puede deshacer.`,
+      )
+    )
+      return;
+
     this.http.delete(`${this.apiUrl}/ordenes-trabajo/${orden.idOrden}`).subscribe({
       next: () => {
         this.exito = '✅ Orden eliminada correctamente';
         this.recargarTodo();
         this.cdr.detectChanges();
-        setTimeout(() => { this.exito = ''; this.cdr.detectChanges(); }, 3000);
+        setTimeout(() => {
+          this.exito = '';
+          this.cdr.detectChanges();
+        }, 3000);
       },
       error: (err) => {
         this.error = '❌ Error: ' + (err.error?.error || 'No se pudo eliminar');
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 }

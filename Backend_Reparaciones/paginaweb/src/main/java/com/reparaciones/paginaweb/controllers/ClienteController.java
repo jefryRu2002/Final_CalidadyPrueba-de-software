@@ -91,9 +91,6 @@ public class ClienteController {
                 if (personaDatos.get("telefono") != null) {
                     persona.setTelefono(personaDatos.get("telefono").toString());
                 }
-                if (personaDatos.get("correo") != null) {
-                    persona.setCorreo(personaDatos.get("correo").toString());
-                }
                 personaService.save(persona);
             }
 

@@ -263,18 +263,6 @@ tbody tr:hover {
 /* ============================================================
    ESTADOS (BADGES)
    ============================================================ */
-.estado {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-    display: inline-block;
-}
-
-.pendiente  { background: #fff3cd; color: #856404; } /* ✅ 5.0:1 */
-.en-proceso { background: #d6e4ff; color: #0b5ed7; } /* ✅ 5.7:1 */
-.finalizado { background: #d4edda; color: #155724; } /* ✅ 7.2:1 */
-
 /* ============================================================
    BOTONES DE ACCIÓN
    ============================================================ */
@@ -292,22 +280,6 @@ tbody tr:hover {
 
 .btn-orden:hover {
     background: #3a5cd7;
-}
-
-.btn-ver-orden {
-    background: #047857; /* ✅ WCAG AA: 5.48:1 */
-    color: white;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 13px;
-    white-space: nowrap;
-}
-
-.btn-ver-orden:hover {
-    background: #065f46;
 }
 
 /* ============================================================
@@ -453,11 +425,6 @@ tbody tr:hover {
     font-size: 12px;
 }
 
-.warning-text {
-    color: #b45309; /* ✅ 4.52:1 */
-    font-size: 12px;
-}
-
 /* ============================================================
    MODAL CREAR ORDEN - Flujo de Estados
    ============================================================ */
@@ -484,12 +451,6 @@ tbody tr:hover {
     border-radius: 8px;
     font-weight: 700;
     font-size: 16px;
-}
-
-.flujo-info {
-    margin-top: 8px;
-    font-size: 12px;
-    color: #475569; /* ✅ 7.0:1 */
 }
 
 /* ============================================================
@@ -542,168 +503,6 @@ tbody tr:hover {
     background: #93c5fd;
     cursor: not-allowed;
     color: #1e3a5f;
-}
-
-/* ============================================================
-   MODAL DETALLE DE ORDEN
-   ============================================================ */
-.modal-detalle {
-    max-width: 600px;
-    padding: 0 !important;
-    overflow: hidden;
-}
-
-.modal-header-detalle {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 20px 25px;
-    background: linear-gradient(135deg, #1e40af, #3b82f6);
-    color: white;
-    border-radius: 12px 12px 0 0;
-}
-
-.detalle-header-icon {
-    font-size: 28px;
-}
-
-.detalle-header-text {
-    flex: 1;
-}
-
-.detalle-header-text h3 {
-    margin: 0;
-    font-size: 18px;
-    color: white;
-}
-
-.detalle-estado {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-top: 4px;
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.detalle-contenido {
-    padding: 20px 25px;
-    max-height: 60vh;
-    overflow-y: auto;
-}
-
-.detalle-seccion {
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #e9ecef;
-}
-
-.detalle-seccion:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-.detalle-seccion h4 {
-    margin: 0 0 12px;
-    color: #1a1a2e;
-    font-size: 15px;
-}
-
-.detalle-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
-.detalle-item {
-    display: flex;
-    flex-direction: column;
-}
-
-.detalle-label {
-    font-size: 11px;
-    color: #475569; /* ✅ 7.0:1 */
-    text-transform: uppercase;
-    font-weight: 600;
-    margin-bottom: 2px;
-}
-
-.detalle-value {
-    font-size: 14px;
-    color: #1e293b; /* ✅ 14.6:1 */
-    font-weight: 500;
-}
-
-.detalle-orden-num {
-    color: #1d4ed8; /* ✅ 6.3:1 */
-    font-weight: 700;
-    font-size: 16px;
-}
-
-.detalle-falla {
-    background: #fef2f2;
-    color: #b91c1c; /* ✅ 6.1:1 */
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-/* ============================================================
-   TIMELINE DE PROGRESO
-   ============================================================ */
-.timeline {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    padding: 10px 0;
-    overflow-x: auto;
-}
-
-.timeline-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    min-width: 60px;
-    font-size: 11px;
-    color: #475569; /* ✅ 7.0:1 */
-    text-align: center;
-    transition: all 0.3s;
-}
-
-.timeline-item.completado {
-    color: #15803d; /* ✅ 5.0:1 */
-    font-weight: 600;
-}
-
-.timeline-punto {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #e2e8f0;
-    border: 3px solid #cbd5e1;
-    transition: all 0.3s;
-}
-
-.timeline-item.completado .timeline-punto {
-    background: #16a34a;
-    border-color: #16a34a;
-    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
-}
-
-.timeline-linea {
-    flex: 1;
-    height: 3px;
-    background: #e2e8f0;
-    min-width: 20px;
-    transition: all 0.3s;
-}
-
-.timeline-linea.completado {
-    background: #16a34a;
 }
 
 /* ============================================================

@@ -5,13 +5,13 @@
     
     <form (ngSubmit)="restablecer()">
       <div class="input-group">
-        <label>Nueva Contraseña</label>
-        <input type="password" [(ngModel)]="contrasena" name="contrasena" required>
+        <label for="nuevaContrasena">Nueva Contraseña</label>
+        <input id="nuevaContrasena" type="password" [(ngModel)]="contrasena" name="contrasena" required>
       </div>
 
       <div class="input-group">
-        <label>Confirmar Contraseña</label>
-        <input type="password" [(ngModel)]="confirmar" name="confirmar" required>
+        <label for="confirmarContrasena">Confirmar Contraseña</label>
+        <input id="confirmarContrasena" type="password" [(ngModel)]="confirmar" name="confirmar" required>
       </div>
 
       <button type="submit" class="btn-login">Restablecer Contraseña</button>

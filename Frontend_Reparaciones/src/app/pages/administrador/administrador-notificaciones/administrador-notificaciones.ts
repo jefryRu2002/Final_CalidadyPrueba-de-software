@@ -1,5 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+
 import { HttpClient } from '@angular/common/http';
 
 interface Notificacion {
@@ -16,24 +16,21 @@ interface Notificacion {
 @Component({
   selector: 'app-notificaciones-admin',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './administrador-notificaciones.html',
-  styleUrls: ['./administrador-notificaciones.css']
+  styleUrls: ['./administrador-notificaciones.css'],
 })
 export class AdministradorNotificaciones implements OnInit {
-  
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
+
   notificaciones: Notificacion[] = [];
   cargando = false;
   error = '';
   exito = '';
   noLeidas = 0;
-  
-  private apiUrl = 'http://localhost:8080/api';
 
-  constructor(
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef
-  ) {}
+  private apiUrl = 'http://localhost:8080/api';
 
   ngOnInit(): void {
     this.cargarNotificaciones();
@@ -49,9 +46,9 @@ export class AdministradorNotificaciones implements OnInit {
     this.http.get<any[]>(`${this.apiUrl}/notificaciones`).subscribe({
       next: (data) => {
         console.log('✅ Notificaciones recibidas:', data?.length || 0);
-        
+
         if (data && data.length > 0) {
-          this.notificaciones = data.map(n => ({
+          this.notificaciones = data.map((n) => ({
             id: n.id || 0,
             tipo: this.mapearTipo(n.tipo),
             titulo: n.titulo || '',
@@ -59,32 +56,32 @@ export class AdministradorNotificaciones implements OnInit {
             fecha: n.fecha || 'Hoy',
             hora: n.hora || '',
             leido: n.leido || false,
-            idReferencia: n.idReferencia || 0
+            idReferencia: n.idReferencia || 0,
           }));
-          
-          this.noLeidas = this.notificaciones.filter(n => !n.leido).length;
+
+          this.noLeidas = this.notificaciones.filter((n) => !n.leido).length;
           console.log('📊 Notificaciones no leídas:', this.noLeidas);
         } else {
           this.notificaciones = [];
           this.noLeidas = 0;
           console.log('ℹ️ No hay notificaciones');
         }
-        
+
         this.cargando = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('❌ Error al cargar notificaciones:', err);
-        
+
         if (err.status === 0) {
           this.error = '❌ No se puede conectar al servidor';
         } else {
           this.error = '❌ Error al cargar notificaciones';
         }
-        
+
         this.cargando = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -100,47 +97,57 @@ export class AdministradorNotificaciones implements OnInit {
   marcarComoLeida(id: number): void {
     this.http.put(`${this.apiUrl}/notificaciones/${id}/leer`, {}).subscribe({
       next: () => {
-        const noti = this.notificaciones.find(n => n.id === id);
+        const noti = this.notificaciones.find((n) => n.id === id);
         if (noti) {
           noti.leido = true;
-          this.noLeidas = this.notificaciones.filter(n => !n.leido).length;
+          this.noLeidas = this.notificaciones.filter((n) => !n.leido).length;
           this.cdr.detectChanges();
         }
       },
-      error: (err) => console.error('Error al marcar como leída:', err)
+      error: (err) => console.error('Error al marcar como leída:', err),
     });
   }
 
   marcarTodasComoLeidas(): void {
     this.http.put(`${this.apiUrl}/notificaciones/leer-todas`, {}).subscribe({
       next: () => {
-        this.notificaciones.forEach(n => n.leido = true);
+        this.notificaciones.forEach((n) => (n.leido = true));
         this.noLeidas = 0;
         this.exito = '✅ Todas las notificaciones marcadas como leídas';
-        setTimeout(() => this.exito = '', 3000);
+        setTimeout(() => (this.exito = ''), 3000);
         this.cdr.detectChanges();
       },
-      error: (err) => console.error('Error:', err)
+      error: (err) => console.error('Error:', err),
     });
   }
 
   getIconoTipo(tipo: string): string {
     switch (tipo) {
-      case 'pago': return '💳';
-      case 'reparacion': return '⚠️';
-      case 'ticket': return '🔄';
-      case 'usuario': return '👥';
-      default: return '📌';
+      case 'pago':
+        return '💳';
+      case 'reparacion':
+        return '⚠️';
+      case 'ticket':
+        return '🔄';
+      case 'usuario':
+        return '👥';
+      default:
+        return '📌';
     }
   }
 
   getClaseIcono(tipo: string): string {
     switch (tipo) {
-      case 'pago': return 'icono-pago';
-      case 'reparacion': return 'icono-tecnico';
-      case 'ticket': return 'icono-ticket';
-      case 'usuario': return 'icono-usuario';
-      default: return 'icono-ticket';
+      case 'pago':
+        return 'icono-pago';
+      case 'reparacion':
+        return 'icono-tecnico';
+      case 'ticket':
+        return 'icono-ticket';
+      case 'usuario':
+        return 'icono-usuario';
+      default:
+        return 'icono-ticket';
     }
   }
 
@@ -152,13 +159,13 @@ export class AdministradorNotificaciones implements OnInit {
       const hoy = new Date();
       const ayer = new Date(hoy);
       ayer.setDate(ayer.getDate() - 1);
-      
+
       if (fechaObj.toDateString() === hoy.toDateString()) return 'Hoy';
       if (fechaObj.toDateString() === ayer.toDateString()) return 'Ayer';
-      
-      return fechaObj.toLocaleDateString('es-PE', { 
-        day: '2-digit', 
-        month: 'short'
+
+      return fechaObj.toLocaleDateString('es-PE', {
+        day: '2-digit',
+        month: 'short',
       });
     } catch {
       return fecha;

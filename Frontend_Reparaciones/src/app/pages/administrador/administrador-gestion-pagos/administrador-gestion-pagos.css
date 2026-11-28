@@ -312,7 +312,8 @@ td strong { color: #0f172a; }
   margin-bottom: 20px;
 }
 
-.detalle-item label {
+.detalle-item label,
+.detalle-item .detalle-label {
   font-size: 10px;
   font-weight: 700;
   color: #64748b;
@@ -322,7 +323,7 @@ td strong { color: #0f172a; }
   margin-bottom: 2px;
 }
 
-.detalle-item span { font-size: 14px; color: #1e293b; font-weight: 600; }
+.detalle-item span:not(.detalle-label) { font-size: 14px; color: #1e293b; font-weight: 600; }
 .valor-destacado { font-weight: 700; color: #0f172a; }
 .monto-destacado { color: #059669; font-weight: 700; font-size: 16px; }
 

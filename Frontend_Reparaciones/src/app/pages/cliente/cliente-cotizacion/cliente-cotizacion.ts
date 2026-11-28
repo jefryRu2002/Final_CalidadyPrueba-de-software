@@ -1,15 +1,17 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+
 import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-cliente-cotizacion',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './cliente-cotizacion.html',
-  styleUrls: ['./cliente-cotizacion.css']
+  styleUrls: ['./cliente-cotizacion.css'],
 })
 export class ClienteCotizacion implements OnInit {
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
 
   cotizaciones: any[] = [];
   cargando = false;
@@ -18,11 +20,6 @@ export class ClienteCotizacion implements OnInit {
   idCliente = 0;
 
   private apiUrl = 'http://localhost:8080/api';
-
-  constructor(
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef
-  ) {}
 
   ngOnInit(): void {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
@@ -47,18 +44,18 @@ export class ClienteCotizacion implements OnInit {
             // 1. IDs de mis órdenes (probando todas las variantes del campo cliente)
             const misOrdenesIds = new Set(
               (ordenes || [])
-                .filter(o => {
+                .filter((o) => {
                   const idClienteOrden = Number(
-                    o.idCliente || o.idPersona || o.id_cliente || o.id_persona || 0
+                    o.idCliente || o.idPersona || o.id_cliente || o.id_persona || 0,
                   );
                   return idClienteOrden === this.idCliente;
                 })
-                .map(o => Number(o.idOrden))
+                .map((o) => Number(o.idOrden)),
             );
             console.log('🔗 misOrdenesIds:', Array.from(misOrdenesIds));
 
             // 2. Filtrar cotizaciones
-            const misCotizaciones = (cotizaciones || []).filter(c => {
+            const misCotizaciones = (cotizaciones || []).filter((c) => {
               const idOrdenCot = Number(c.idOrden);
               const estadoOk =
                 c.estado === 'APROBADA_ADMIN' ||
@@ -66,14 +63,20 @@ export class ClienteCotizacion implements OnInit {
                 c.estado === 'RECHAZADA_CLIENTE';
               const esMia = misOrdenesIds.has(idOrdenCot);
               if (!esMia || !estadoOk) {
-                console.log('⏭️ Descartada:', { idCotizacion: c.idCotizacion, idOrden: c.idOrden, estado: c.estado, esMia, estadoOk });
+                console.log('⏭️ Descartada:', {
+                  idCotizacion: c.idCotizacion,
+                  idOrden: c.idOrden,
+                  estado: c.estado,
+                  esMia,
+                  estadoOk,
+                });
               }
               return esMia && estadoOk;
             });
 
             console.log('✅ Cotizaciones filtradas:', misCotizaciones.length);
 
-            this.cotizaciones = misCotizaciones.map(c => ({
+            this.cotizaciones = misCotizaciones.map((c) => ({
               idCotizacion: c.idCotizacion,
               idOrden: c.idOrden,
               ticket: 'OT-' + c.idOrden,
@@ -84,7 +87,7 @@ export class ClienteCotizacion implements OnInit {
               totalTrabajos: c.totalTrabajos || 0,
               manoObra: c.manoObra || 0,
               fecha: c.fechaCreacion || '',
-              descripcion: c.descripcionFalla || c.notas || ''
+              descripcion: c.descripcionFalla || c.notas || '',
             }));
 
             this.cargando = false;
@@ -95,7 +98,7 @@ export class ClienteCotizacion implements OnInit {
             this.error = '❌ Error al cargar tus órdenes';
             this.cargando = false;
             this.cdr.detectChanges();
-          }
+          },
         });
       },
       error: (err) => {
@@ -103,7 +106,7 @@ export class ClienteCotizacion implements OnInit {
         this.error = '❌ Error al cargar cotizaciones';
         this.cargando = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -118,15 +121,21 @@ export class ClienteCotizacion implements OnInit {
         this.cargando = false;
         this.cdr.detectChanges();
         this.cargarCotizaciones();
-        setTimeout(() => { this.exito = ''; this.cdr.detectChanges(); }, 5000);
+        setTimeout(() => {
+          this.exito = '';
+          this.cdr.detectChanges();
+        }, 5000);
       },
       error: (err) => {
         console.error('❌ Error:', err);
         this.error = err.error?.error || '❌ Error al aceptar la cotización';
         this.cargando = false;
         this.cdr.detectChanges();
-        setTimeout(() => { this.error = ''; this.cdr.detectChanges(); }, 5000);
-      }
+        setTimeout(() => {
+          this.error = '';
+          this.cdr.detectChanges();
+        }, 5000);
+      },
     });
   }
 
@@ -141,15 +150,21 @@ export class ClienteCotizacion implements OnInit {
         this.cargando = false;
         this.cdr.detectChanges();
         this.cargarCotizaciones();
-        setTimeout(() => { this.exito = ''; this.cdr.detectChanges(); }, 5000);
+        setTimeout(() => {
+          this.exito = '';
+          this.cdr.detectChanges();
+        }, 5000);
       },
       error: (err) => {
         console.error('❌ Error:', err);
         this.error = err.error?.error || '❌ Error al rechazar la cotización';
         this.cargando = false;
         this.cdr.detectChanges();
-        setTimeout(() => { this.error = ''; this.cdr.detectChanges(); }, 5000);
-      }
+        setTimeout(() => {
+          this.error = '';
+          this.cdr.detectChanges();
+        }, 5000);
+      },
     });
   }
 
@@ -158,7 +173,7 @@ export class ClienteCotizacion implements OnInit {
     return new Intl.NumberFormat('es-PE', {
       style: 'currency',
       currency: 'PEN',
-      minimumFractionDigits: 2
+      minimumFractionDigits: 2,
     }).format(monto);
   }
 
@@ -166,9 +181,13 @@ export class ClienteCotizacion implements OnInit {
     if (!fecha) return 'Sin fecha';
     try {
       return new Date(fecha).toLocaleDateString('es-PE', {
-        day: '2-digit', month: '2-digit', year: 'numeric'
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
       });
-    } catch { return fecha; }
+    } catch {
+      return fecha;
+    }
   }
 
   recargar(): void {

@@ -29,7 +29,7 @@
   <!-- FORMULARIO -->
   @if (!enviado) {
     @if (error) {
-      <div class="alerta-error" style="cursor: pointer;" (click)="error = ''">⚠️ {{ error }} (Click para cerrar)</div>
+      <div class="alerta-error" style="cursor: pointer;" role="button" tabindex="0" (click)="error = ''" (keydown.enter)="error = ''" (keydown.space)="$event.preventDefault(); error = ''">⚠️ {{ error }} (Click para cerrar)</div>
     }
     
     <div class="form-card">

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
@@ -9,16 +9,18 @@ import { catchError } from 'rxjs/operators';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './administrador-dashboard.html',
-  styleUrls: ['./administrador-dashboard.css']
+  styleUrls: ['./administrador-dashboard.css'],
 })
 export class AdministradorDashboard implements OnInit {
+  private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef);
 
   estadisticas = {
     reparaciones: 0,
     pendientes: 0,
     ingresos: 0,
     clientes: 0,
-    tecnicos: 0
+    tecnicos: 0,
   };
 
   ultimasReparaciones: any[] = [];
@@ -26,11 +28,6 @@ export class AdministradorDashboard implements OnInit {
   error = '';
 
   private apiUrl = 'http://localhost:8080/api';
-
-  constructor(
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef
-  ) {}
 
   ngOnInit(): void {
     this.cargarDashboard();
@@ -49,17 +46,17 @@ export class AdministradorDashboard implements OnInit {
             statusText: err.statusText,
             message: err.message,
             url: err.url,
-            error: err.error
+            error: err.error,
           });
           this.error = '❌ Error al conectar con el servidor';
           return of([]);
-        })
+        }),
       ),
       pagos: this.http.get<any>(`${this.apiUrl}/pagos`).pipe(
         catchError((err) => {
           console.warn('⚠️ No se cargaron pagos:', err.status);
           return of([]);
-        })
+        }),
       ),
       clientes: this.http.get<any>(`${this.apiUrl}/clientes`).pipe(
         catchError((err) => {
@@ -68,10 +65,10 @@ export class AdministradorDashboard implements OnInit {
             statusText: err.statusText,
             message: err.message,
             url: err.url,
-            error: err.error
+            error: err.error,
           });
           return of([]);
-        })
+        }),
       ),
       tecnicos: this.http.get<any>(`${this.apiUrl}/tecnicos`).pipe(
         catchError((err) => {
@@ -80,13 +77,12 @@ export class AdministradorDashboard implements OnInit {
             statusText: err.statusText,
             message: err.message,
             url: err.url,
-            error: err.error
+            error: err.error,
           });
           return of([]);
-        })
-      )
+        }),
+      ),
     }).subscribe(({ ordenes, pagos, clientes, tecnicos }) => {
-
       // ---- Normalizar respuestas a arrays ----
       const listaOrdenes = this.extraerLista(ordenes, 'ordenes');
       const listaPagos = this.extraerLista(pagos, 'pagos');
@@ -100,31 +96,32 @@ export class AdministradorDashboard implements OnInit {
         ordenes: listaOrdenes.length,
         pagos: listaPagos.length,
         clientes: listaClientes.length,
-        tecnicos: listaTecnicos.length
+        tecnicos: listaTecnicos.length,
       });
 
       // ---- Órdenes ----
       this.estadisticas.reparaciones = listaOrdenes.length;
-      this.estadisticas.pendientes = listaOrdenes.filter((o: any) =>
-        o.estado === 'PENDIENTE' ||
-        o.estado === 'ASIGNADO' ||
-        o.estado === 'EN_PROCESO'
+      this.estadisticas.pendientes = listaOrdenes.filter(
+        (o: any) =>
+          o.estado === 'PENDIENTE' || o.estado === 'ASIGNADO' || o.estado === 'EN_PROCESO',
       ).length;
 
       // Últimas 10 reparaciones
       this.ultimasReparaciones = listaOrdenes
-        .sort((a: any, b: any) =>
-          new Date(b.fechaInicio || 0).getTime() - new Date(a.fechaInicio || 0).getTime()
+        .sort(
+          (a: any, b: any) =>
+            new Date(b.fechaInicio || 0).getTime() - new Date(a.fechaInicio || 0).getTime(),
         )
         .slice(0, 10)
         .map((orden: any) => ({
           id: orden.idOrden || 0,
           ticket: 'OT-' + (orden.idOrden || 0),
           cliente: orden.nombreCliente || 'Sin cliente',
-          equipo: orden.equipo || `${orden.marca || ''} ${orden.modelo || ''}`.trim() || 'Sin equipo',
+          equipo:
+            orden.equipo || `${orden.marca || ''} ${orden.modelo || ''}`.trim() || 'Sin equipo',
           estado: this.mapearEstado(orden.estado),
           tecnico: orden.nombreTecnico || 'No asignado',
-          fecha: orden.fechaInicio || new Date()
+          fecha: orden.fechaInicio || new Date(),
         }));
 
       // ---- Ingresos desde pagos aprobados ----
@@ -166,17 +163,17 @@ export class AdministradorDashboard implements OnInit {
   mapearEstado(estado: string): string {
     if (!estado) return 'Pendiente';
     const map: Record<string, string> = {
-      'PENDIENTE': 'Pendiente',
-      'ASIGNADO': 'Asignado',
-      'EN_PROCESO': 'En diagnóstico',
-      'COTIZADO': 'Cotizado',
-      'COTIZACION_RECHAZADA_ADMIN': 'Cotización rechazada',
-      'COTIZACION_APROBADA': 'Cotización aprobada',
-      'EN_REPARACION': 'En reparación',
-      'EN_PRUEBAS': 'En pruebas',
-      'TERMINADO': 'Listo para entrega',
-      'ENTREGADO': 'Entregado',
-      'DEVUELTO': 'Devuelto'
+      PENDIENTE: 'Pendiente',
+      ASIGNADO: 'Asignado',
+      EN_PROCESO: 'En diagnóstico',
+      COTIZADO: 'Cotizado',
+      COTIZACION_RECHAZADA_ADMIN: 'Cotización rechazada',
+      COTIZACION_APROBADA: 'Cotización aprobada',
+      EN_REPARACION: 'En reparación',
+      EN_PRUEBAS: 'En pruebas',
+      TERMINADO: 'Listo para entrega',
+      ENTREGADO: 'Entregado',
+      DEVUELTO: 'Devuelto',
     };
     return map[estado] || estado;
   }
@@ -184,8 +181,16 @@ export class AdministradorDashboard implements OnInit {
   getEstadoClass(estado: string): string {
     const e = (estado || '').toLowerCase();
     if (e.includes('pendiente') || e.includes('cotizado')) return 'pendiente';
-    if (e.includes('asignado') || e.includes('proceso') || e.includes('reparacion') || e.includes('pruebas') || e.includes('aprobada')) return 'proceso';
-    if (e.includes('terminado') || e.includes('listo') || e.includes('entregado')) return 'terminado';
+    if (
+      e.includes('asignado') ||
+      e.includes('proceso') ||
+      e.includes('reparacion') ||
+      e.includes('pruebas') ||
+      e.includes('aprobada')
+    )
+      return 'proceso';
+    if (e.includes('terminado') || e.includes('listo') || e.includes('entregado'))
+      return 'terminado';
     if (e.includes('rechazada') || e.includes('devuelto')) return 'cancelado';
     return 'pendiente';
   }
@@ -194,7 +199,7 @@ export class AdministradorDashboard implements OnInit {
     return new Intl.NumberFormat('es-PE', {
       style: 'currency',
       currency: 'PEN',
-      minimumFractionDigits: 2
+      minimumFractionDigits: 2,
     }).format(monto || 0);
   }
 
