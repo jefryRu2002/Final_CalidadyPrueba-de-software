@@ -28,19 +28,6 @@ export class AdministradorOrdenTrabajo implements OnInit, OnDestroy {
   private apiUrl = 'http://localhost:8080/api';
   private intervaloActualizacion: any;
 
-  estadosOrden = [
-    'ASIGNADO',
-    'EN_PROCESO',
-    'COTIZADO',
-    'COTIZACION_RECHAZADA_ADMIN',
-    'COTIZACION_APROBADA',
-    'EN_REPARACION',
-    'EN_PRUEBAS',
-    'TERMINADO',
-    'ENTREGADO',
-    'DEVUELTO',
-  ];
-
   ngOnInit() {
     this.cargarDatosIniciales();
     this.iniciarAutoActualizacion();
@@ -262,9 +249,7 @@ export class AdministradorOrdenTrabajo implements OnInit, OnDestroy {
   }
 
   guardarCambios(): void {
-    const datos: any = {
-      estado: this.ordenSeleccionada.estado,
-    };
+    const datos: { idTecnico?: string | number } = {};
 
     if (this.ordenSeleccionada.idTecnico) {
       datos.idTecnico = this.ordenSeleccionada.idTecnico;

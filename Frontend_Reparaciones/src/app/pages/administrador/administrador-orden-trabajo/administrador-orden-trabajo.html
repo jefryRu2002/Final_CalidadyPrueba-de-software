@@ -113,7 +113,7 @@
                                 </td>
                                 <td>
                                     <div class="acciones-cell">
-                                        <button class="btn-editar" (click)="abrirModalEditar(orden)" title="Editar orden">
+                                        <button class="btn-editar" (click)="abrirModalEditar(orden)" title="Cambiar técnico">
                                             ✏️
                                         </button>
                                         <button class="btn-eliminar" (click)="eliminarOrden(orden)" title="Eliminar orden">
@@ -137,7 +137,7 @@
         <div class="modal-overlay" tabindex="0" (keydown.escape)="cerrarModalEditar()" (click)="$event.target === $event.currentTarget && cerrarModalEditar()">
             <div class="modal-card">
                 <div class="modal-header">
-                    <h2>✏️ Editar {{ ordenSeleccionada.id }}</h2>
+                    <h2>👨‍🔧 Cambiar técnico - {{ ordenSeleccionada.id }}</h2>
                     <button class="btn-cerrar" (click)="cerrarModalEditar()">✕</button>
                 </div>
                 
@@ -161,7 +161,7 @@
                     </div>
 
                     <div class="edit-section">
-                        <h3>⚙️ Configuración</h3>
+                        <h3>⚙️ Asignación</h3>
                         <div class="form-group">
                             <label for="tecnicoAsignado">👨‍🔧 Técnico Asignado</label>
                             <select id="tecnicoAsignado" [(ngModel)]="ordenSeleccionada.idTecnico">
@@ -169,21 +169,6 @@
                                 @for (t of tecnicos; track t.id) {
                                     <option [value]="t.id">{{ t.nombre }}</option>
                                 }
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="estadoOrden">📊 Estado</label>
-                            <select id="estadoOrden" [(ngModel)]="ordenSeleccionada.estado">
-                                <option value="ASIGNADO">👤 Asignado</option>
-                                <option value="EN_PROCESO">🔍 En diagnóstico</option>
-                                <option value="COTIZADO">💰 Cotizado</option>
-                                <option value="COTIZACION_RECHAZADA_ADMIN">❌ Cotización rechazada</option>
-                                <option value="COTIZACION_APROBADA">✅ Cotización aprobada</option>
-                                <option value="EN_REPARACION">🔧 En reparación</option>
-                                <option value="EN_PRUEBAS">🧪 En pruebas</option>
-                                <option value="TERMINADO">✅ Terminado</option>
-                                <option value="ENTREGADO">📦 Entregado</option>
-                                <option value="DEVUELTO">↩️ Devuelto</option>
                             </select>
                         </div>
                     </div>
