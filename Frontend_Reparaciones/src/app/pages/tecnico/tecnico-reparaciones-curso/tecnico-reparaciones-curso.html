@@ -65,8 +65,8 @@
 </div>
 
 @if (ordenSeleccionada) {
-    <div class="modal-overlay" (click)="cerrarModal()">
-        <div class="modal-reparacion" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" tabindex="0" (keydown.escape)="cerrarModal()" (click)="$event.target === $event.currentTarget && cerrarModal()">
+        <div class="modal-reparacion">
             <div class="modal-header">
                 <h2>🔧 {{ ordenSeleccionada.ticket }}</h2>
                 <button class="btn-close" (click)="cerrarModal()">✕</button>
@@ -100,21 +100,15 @@
 
                 <!-- Sección: Repuestos -->
                 <div class="seccion">
-                    <div class="seccion-header">
-                        <h3>🔩 Repuestos Utilizados</h3>
-                        <button class="btn-agregar-repuesto" (click)="abrirModalRepuesto()">
-                            + Agregar
-                        </button>
-                    </div>
+                    <h3>🔩 Repuestos de la Cotización</h3>
                     @if (ordenSeleccionada.repuestos?.length) {
                         <table class="tabla-items">
                             <thead>
                                 <tr>
                                     <th>Repuesto</th>
                                     <th>Cant.</th>
-                                    <th>Precio</th>
+                                    <th>Precio unitario</th>
                                     <th>Subtotal</th>
-                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -124,11 +118,6 @@
                                         <td>{{ rep.cantidad }}</td>
                                         <td>S/ {{ rep.precio.toFixed(2) }}</td>
                                         <td>S/ {{ (rep.cantidad * rep.precio).toFixed(2) }}</td>
-                                        <td>
-                                            <button class="btn-quitar" (click)="quitarRepuesto($index)">
-                                                ✕
-                                            </button>
-                                        </td>
                                     </tr>
                                 }
                             </tbody>
@@ -136,6 +125,8 @@
                         <div class="subtotal-seccion">
                             Total: <strong>S/ {{ calcularTotalRepuestos().toFixed(2) }}</strong>
                         </div>
+                    } @else {
+                        <p class="sin-repuestos">La cotización aprobada no incluye repuestos.</p>
                     }
                 </div>
 
@@ -160,41 +151,6 @@
                 <button class="btn-pago" (click)="avanzarAPruebas()" [disabled]="procesando">
                     ▶ Avanzar a Pruebas
                 </button>
-            </div>
-        </div>
-    </div>
-}
-
-<!-- Modal Agregar Repuesto -->
-@if (mostrarModalRepuesto) {
-    <div class="modal-overlay" (click)="cerrarModalRepuesto()">
-        <div class="modal-repuesto" (click)="$event.stopPropagation()">
-            <div class="modal-header">
-                <h3>🔩 Agregar Repuesto</h3>
-                <button class="btn-cerrar" (click)="cerrarModalRepuesto()">✕</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-grupo">
-                    <label for="repNombre">Nombre</label>
-                    <input id="repNombre" type="text" [(ngModel)]="nuevoRepuesto.nombre" 
-                           placeholder="Ej: Pantalla LCD">
-                </div>
-                <div class="form-fila">
-                    <div class="form-grupo">
-                        <label for="repCantidad">Cantidad</label>
-                        <input id="repCantidad" type="number" [(ngModel)]="nuevoRepuesto.cantidad" 
-                               min="1" placeholder="1">
-                    </div>
-                    <div class="form-grupo">
-                        <label for="repPrecio">Precio (S/)</label>
-                        <input id="repPrecio" type="number" [(ngModel)]="nuevoRepuesto.precio" 
-                               min="0" step="0.01" placeholder="0.00">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancelar" (click)="cerrarModalRepuesto()">Cancelar</button>
-                <button class="btn-guardar-modal" (click)="agregarRepuesto()">✅ Agregar</button>
             </div>
         </div>
     </div>

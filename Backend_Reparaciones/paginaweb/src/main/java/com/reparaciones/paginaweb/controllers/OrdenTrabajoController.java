@@ -234,7 +234,7 @@ public class OrdenTrabajoController {
                 }
             }
 
-            List<ReparacionRepuestoModel> repuestos = new ArrayList<>();
+            List<ReparacionRepuestoModel> repuestos = repuestosMap == null ? null : new ArrayList<>();
             if (repuestosMap != null) {
                 for (Map<String, Object> r : repuestosMap) {
                     ReparacionRepuestoModel rr = new ReparacionRepuestoModel();

@@ -115,9 +115,11 @@ public class OrdenTrabajoService {
 
         // Borrar los anteriores
         reparacionTrabajoRepository.deleteByOrdenIdOrden(idOrden);
-        reparacionRepuestoRepository.deleteByOrdenIdOrden(idOrden);
         orden.getTrabajosRealizados().clear();
-        orden.getRepuestosUsados().clear();
+        if (repuestos != null) {
+            reparacionRepuestoRepository.deleteByOrdenIdOrden(idOrden);
+            orden.getRepuestosUsados().clear();
+        }
 
         // Guardar los nuevos
         if (trabajos != null) {
