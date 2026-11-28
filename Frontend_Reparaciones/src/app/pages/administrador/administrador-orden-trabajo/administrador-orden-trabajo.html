@@ -113,7 +113,13 @@
                                 </td>
                                 <td>
                                     <div class="acciones-cell">
-                                        <button class="btn-editar" (click)="abrirModalEditar(orden)" title="Cambiar técnico">
+                                        <button
+                                            class="btn-editar"
+                                            (click)="abrirModalEditar(orden)"
+                                            [disabled]="orden.estado !== 'ASIGNADO'"
+                                            [title]="orden.estado === 'ASIGNADO' ? 'Cambiar técnico' : 'Solo se puede cambiar cuando está asignado'"
+                                            [attr.aria-label]="'Cambiar técnico de ' + orden.id"
+                                        >
                                             ✏️
                                         </button>
                                         <button class="btn-eliminar" (click)="eliminarOrden(orden)" title="Eliminar orden">

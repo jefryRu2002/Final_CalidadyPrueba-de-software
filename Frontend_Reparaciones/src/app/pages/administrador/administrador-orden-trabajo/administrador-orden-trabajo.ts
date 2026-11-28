@@ -235,6 +235,8 @@ export class AdministradorOrdenTrabajo implements OnInit, OnDestroy {
   }
 
   abrirModalEditar(orden: any): void {
+    if (orden.estado !== 'ASIGNADO') return;
+
     this.ordenSeleccionada = {
       ...orden,
       _teniaTecnico: !!orden.idTecnico,
@@ -249,6 +251,12 @@ export class AdministradorOrdenTrabajo implements OnInit, OnDestroy {
   }
 
   guardarCambios(): void {
+    if (this.ordenSeleccionada.estado !== 'ASIGNADO') {
+      this.error = 'Solo se puede cambiar el técnico cuando la orden está asignada.';
+      this.cdr.detectChanges();
+      return;
+    }
+
     const datos: { idTecnico?: string | number } = {};
 
     if (this.ordenSeleccionada.idTecnico) {

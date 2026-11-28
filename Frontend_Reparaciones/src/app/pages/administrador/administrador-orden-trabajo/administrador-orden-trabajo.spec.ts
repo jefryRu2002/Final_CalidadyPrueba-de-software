@@ -23,6 +23,7 @@ describe('AdministradorOrdenTrabajo', () => {
 
     fixture = TestBed.createComponent(AdministradorOrdenTrabajo);
     component = fixture.componentInstance;
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
@@ -39,7 +40,7 @@ describe('AdministradorOrdenTrabajo', () => {
       modelo: 'Modelo',
       descripcion: 'Problema',
       idTecnico: 3,
-      estado: 'EN_REPARACION',
+      estado: 'ASIGNADO',
     });
     fixture.detectChanges();
 
@@ -48,11 +49,45 @@ describe('AdministradorOrdenTrabajo', () => {
     expect(fixture.nativeElement.querySelectorAll('.edit-section select')).toHaveLength(1);
   });
 
+  it('disables technician changes unless the order is assigned', () => {
+    component.ordenes = [
+      {
+        id: 'OT-1',
+        idOrden: 1,
+        ticket: 'TK-1',
+        cliente: 'Cliente',
+        tecnico: 'Técnico',
+        descripcion: 'Problema',
+        estado: 'ASIGNADO',
+      },
+      {
+        id: 'OT-2',
+        idOrden: 2,
+        ticket: 'TK-2',
+        cliente: 'Cliente',
+        tecnico: 'Técnico',
+        descripcion: 'Problema',
+        estado: 'EN_REPARACION',
+      },
+    ];
+    fixture.detectChanges();
+
+    const buttons = fixture.nativeElement.querySelectorAll(
+      '.btn-editar',
+    ) as NodeListOf<HTMLButtonElement>;
+
+    expect(buttons[0].disabled).toBe(false);
+    expect(buttons[1].disabled).toBe(true);
+
+    component.abrirModalEditar(component.ordenes[1]);
+    expect(component.mostrarModalEditar).toBe(false);
+  });
+
   it('saves technician assignment without sending an order state', () => {
     component.ordenSeleccionada = {
       idOrden: 2,
       idTecnico: 4,
-      estado: 'EN_REPARACION',
+      estado: 'ASIGNADO',
     };
 
     component.guardarCambios();
@@ -61,5 +96,18 @@ describe('AdministradorOrdenTrabajo', () => {
       'http://localhost:8080/api/ordenes-trabajo/2',
       { idTecnico: 4 },
     );
+  });
+
+  it('does not save a technician change after the order leaves assigned state', () => {
+    component.ordenSeleccionada = {
+      idOrden: 2,
+      idTecnico: 4,
+      estado: 'EN_REPARACION',
+    };
+
+    component.guardarCambios();
+
+    expect(mockHttpClient.put).not.toHaveBeenCalled();
+    expect(component.error).toContain('Solo se puede cambiar el técnico');
   });
 });

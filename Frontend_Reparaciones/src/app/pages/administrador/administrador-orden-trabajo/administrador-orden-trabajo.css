@@ -407,6 +407,15 @@ td {
     background: #eff6ff;
 }
 
+.btn-editar:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.btn-editar:disabled:hover {
+    background: transparent;
+}
+
 .btn-eliminar:hover {
     background: #fef2f2;
 }

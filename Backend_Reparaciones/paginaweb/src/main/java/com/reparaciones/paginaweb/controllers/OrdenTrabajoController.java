@@ -139,6 +139,11 @@ public class OrdenTrabajoController {
             if (idTecnico != null) {
                 String idStr = idTecnico.toString();
                 if (!idStr.isEmpty() && !idStr.equals("null")) {
+                    if (!"ASIGNADO".equals(orden.getEstado())) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                                "error", "Solo se puede cambiar el técnico cuando la orden está asignada."
+                        ));
+                    }
                     TecnicoModel t = new TecnicoModel();
                     t.setIdPersona(Integer.parseInt(idStr));
                     orden.setTecnico(t);
